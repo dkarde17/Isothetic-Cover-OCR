@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 /**
  * Created by CNOVA on 4/3/2016.
@@ -21,6 +22,7 @@ public class IsotheticCoverCalc {
     public static int[][] createUnitEdgeMatrix(PgmImage pgmImage, Properties properties){
 
         int gridSize = Integer.parseInt(properties.getProperty("gridSize"));
+        System.out.println("Grid size = " + gridSize);
 
         //number of rows in the UnitEdgeMatrix depends on the mapping i co-ordinate of the last horizontal edge row (i = imgHeight) of the grid to UnitEdgeMatrix
         int rowMax = iMappingHorizontalEdge(pgmImage.imgHeight, gridSize);
@@ -38,12 +40,14 @@ public class IsotheticCoverCalc {
     Method to set (0 or 1 in) the unitEdgeMatrix according to the information in the imgMatrix
      */
     public static void setUnitEdgeMatrix(int[][] unitEdgeMatrix, PgmImage pgmImage, Properties properties){
+
         int gridSize = Integer.parseInt(properties.getProperty("gridSize"));
+        System.out.println("Grid size = " + gridSize);
 
         /*
         For each intersection point on the grid i.e. vertex <iVertex, jVertex> check if the horizontal or vertical edge or both
         are being intersected by the image or not, fill 1 in the corresponding cell of the unitEdgeMatrix if intersecting, otherwise 0
-        iVertex and jVertex are multiples of gridSize, exept for the rightmost and the bottommost vertices, because the index of the
+        iVertex and jVertex are multiples of gridSize, except for the rightmost and the bottommost vertices, because the index of the
         imgMatrix starts from 0
          */
         for(int iVertex = 0; iVertex <= pgmImage.imgHeight; iVertex+=gridSize){
@@ -98,6 +102,7 @@ public class IsotheticCoverCalc {
     public static int[][] createUnitSquareMatrix(PgmImage pgmImage, Properties properties){
 
         int gridSize = Integer.parseInt(properties.getProperty("gridSize"));
+        System.out.println("Grid size = " + gridSize);
 
         //no. of rows and columns depends on the image size and the grid size
         int rowMax = pgmImage.imgHeight/gridSize;
@@ -138,25 +143,30 @@ public class IsotheticCoverCalc {
     }
 
     //method to find out the Isothetic cover vertices
-    public static ArrayList<Vertex> listVertices(PgmImage pgmImage, int[][] unitSquareMatrix, Properties properties){
+    public static ArrayList<Vertex> listVertices(PgmImage pgmImage, int[][] unitSquareMatrix, Properties properties, Logger LOGGER){
         int gridSize = Integer.parseInt(properties.getProperty("gridSize"));
+        System.out.println("Grid size = " + gridSize);
         int iMax = pgmImage.imgHeight/gridSize;
         int jMax = pgmImage.imgWidth/gridSize;
 
         //list to store the vertices, sorted in increasing order with primary key i and secondary key j
         ArrayList<Vertex> iSortedList = new ArrayList<>();
 
+
         //list to store the vertices, sorted in increasing order with primary key j and secondary key i
         ArrayList<Vertex> jSortedList;
 
         //list to store the vertices in the Isothetic polygon in the order of traversal starting from the start Vertex
+        LOGGER.info("Creating list to store the vertices of isothetic polygon in traversal order");
         ArrayList<Vertex> isotheticVertices = new ArrayList<>();
+        LOGGER.info("isotheticVertices list successfully created");
 
         Vertex vertex;
         Vertex start = null;
         Vertex temp;
 
 
+        LOGGER.info("Creating list with vertices sorted in increasing order with i as primary key and j as secondary key");
         for(int row = 0; row <= pgmImage.imgHeight; row+=gridSize){
             for(int col = 0; col <= pgmImage.imgWidth; col+=gridSize){
                 //converting to unitSquareMatrix co-ordinates
@@ -204,6 +214,14 @@ public class IsotheticCoverCalc {
                 }
             }
         }
+        LOGGER.info("iSortedList successfully created");
+
+        //Check if no vertices in the list
+        if (iSortedList.isEmpty()) {
+            LOGGER.warning("No vertices in the iSortedList");
+            LOGGER.warning("Exiting");
+            System.exit(-1);
+        }
 
         //iSortedList is sorted on i (Primary Key) and j (Secondary Key)
 
@@ -214,10 +232,13 @@ public class IsotheticCoverCalc {
         jSortedList is already sorted on i as Primary key and j as Secondary key, and Since Collections.sort() is a stable sort method,
         if we sort on j as Primary key, the order based on i won't be disturbed and i will become the Secondary key
          */
+        LOGGER.info("Creating list with vertices sorted in increasing order with j as primary key and i as secondary key");
         Collections.sort(jSortedList, new VertexJComparator());
+        LOGGER.info("jSortedList successfully created");
 
         direction = startDirection;
 
+        LOGGER.info("Creating isotheticVertices list which stores vertices in traversal order");
         temp = start;
 
         //find the next vertex and add it to the vertices (list of Isothetic polygon vertices, until the next vertex is same as start, i.e. next vertex is last vertex
@@ -225,6 +246,7 @@ public class IsotheticCoverCalc {
             isotheticVertices.add(temp);
             temp = nextVertex(temp, iSortedList, jSortedList);
         }while (temp != start);
+        LOGGER.info("isotheticVertices list successfully created");
 
         return  isotheticVertices;
     }

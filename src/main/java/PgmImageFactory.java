@@ -11,6 +11,7 @@ public class PgmImageFactory {
     //method to create PgmImage object and initializing the filePath variable
     public static PgmImage create(String filePath){
         PgmImage pgmImage = new PgmImage(filePath);
+
         return pgmImage;
     }
 

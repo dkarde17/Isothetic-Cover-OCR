@@ -2,6 +2,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 /**
  * Created by CNOVA on 3/31/2016.
@@ -10,19 +11,20 @@ import java.util.Properties;
 public class ImgReadWrite {
 
     //method to intialize the parameters in the pgmImage object e.g. imgWidth, imgHeight, etc. from the .pgm source file
-    public static void init(PgmImage pgmImage, Properties properties){
+    public static void init(PgmImage pgmImage, Properties properties, Logger LOGGER){
         FileInputStream fileInputStream = null;
         DataInputStream dataInputStream = null;
         try {
-
             fileInputStream = new FileInputStream(pgmImage.path);
             dataInputStream = new DataInputStream(fileInputStream);
 
             //reading the type of the image
             pgmImage.imgType = dataInputStream.readLine();
+            System.out.println("imgType = " + pgmImage.imgType);
             int parameterCount = 0; //should not be greater than 3 i.e. height, width and maximum Intensity
 
             // to parse the header: drop the comments and to find out the width, height and maximum Intensity
+            LOGGER.info("Finding image width, height and maximum Intensity");
             while(pgmImage.imgWidth==0 || pgmImage.imgHeight==0 || pgmImage.maxIntensity == 0){
                     String line = dataInputStream.readLine();
                     int comIndex = line.indexOf('#'); //index of the starting of the comment
@@ -74,19 +76,22 @@ public class ImgReadWrite {
                 }
 
             //matching the img dimensions with the dimensions specified in the properties file, if not then abort
-            if(pgmImage.imgWidth != Integer.parseInt(properties.getProperty("imgWidth")) || pgmImage.imgHeight != Integer.parseInt(properties.getProperty("imgHeight"))){
-                System.out.println("Invalid Image: The dimensions found in the image header are not consistent with those specified in the config.properties file");
+            if(pgmImage.imgWidth != Integer.parseInt(properties.getProperty("imgWidth")) || pgmImage.imgHeight != Integer.parseInt(properties.getProperty("imgHeight")) || pgmImage.maxIntensity != Integer.parseInt(properties.getProperty("maxIntensity"))){
+                LOGGER.warning("Invalid Image: One or more parameters found in the image header are not consistent with those specified in the config.properties file");
+                LOGGER.warning("Exiting");
                 System.exit(-1);
             }
+
+            System.out.println("Image width = " + pgmImage.imgWidth);
+            System.out.println("Image height = " + pgmImage.imgHeight);
+            System.out.println("Image maximum intensity = " + pgmImage.maxIntensity);
 
             //initializing the imgMatrix
             pgmImage.imgMatrix = new int[pgmImage.imgHeight][pgmImage.imgWidth];
             //in pgm images we can not have anything after the maximum intensity except for a white space (generally "end of the line"), after that the image intensity matrix starts
             int pixel = 0;
 
-            //reading the threshold intensity from the config.properties file
-            int threshold = Integer.parseInt(properties.getProperty("pixelThreshold"));
-
+            LOGGER.info("Initializing pgmImage.imgMatrix: reading from source .pgm file");
             //for each row of the imgMatrix
             for(int row = 0; row < pgmImage.imgHeight;  row++){
                 //in each column of the imgMatrix
@@ -101,19 +106,26 @@ public class ImgReadWrite {
 
                     //if the data stream ended unexpectedly or doesn't have enough pixel intensities according to the width and the height
                     else {
-                        System.out.println("Invalid Image : the no. of pixel intensities given are not consistent with the size specified");
+                        LOGGER.warning("Invalid Image : the no. of pixel intensities given are not consistent with the size specified");
+                        LOGGER.warning("Exiting");
+                        System.exit(-1);
                     }
                 }
             }
+            LOGGER.info("Successfully initialized the image matrix");
         } catch (FileNotFoundException e) {
+            LOGGER.warning("Source .pgm file not found");
             e.printStackTrace();
         } catch (IOException e) {
+            LOGGER.warning("Unable to read from source .pgm File");
             e.printStackTrace();
         } finally {
             try {
-                fileInputStream.close(); //not needed, closing dataInputStream (Wrapper) will close fileInputStream also
+                LOGGER.info("Closing the source .pgm file dataInputStream and fileInputStream");
                 dataInputStream.close();
+                LOGGER.info("Successfully closed the streams");
             } catch (IOException e) {
+                LOGGER.warning("Unable to close the streams");
                 e.printStackTrace();
             }
         }
@@ -121,39 +133,46 @@ public class ImgReadWrite {
 
 
     //method to binarize the imgMatrix in the pgmImage object, i.e. if pixels are lighter than a threshold, make white (255) otherwise black (0)
-    public static void binarizeImgMatrix(PgmImage pgmImage, Properties properties){
+    public static void binarizeImgMatrix(PgmImage pgmImage, Properties properties, Logger LOGGER){
+        //reading the threshold intensity from the config.properties file
+        int threshold = Integer.parseInt(properties.getProperty("pixelThreshold"));
+        System.out.println("Threshold value = " + threshold);
         for (int i = 0; i < pgmImage.imgHeight; i++){
             for(int j = 0; j < pgmImage.imgWidth; j++){
-                pgmImage.imgMatrix[i][j] = (pgmImage.imgMatrix[i][j] > Integer.parseInt(properties.getProperty("pixelThreshold"))) ? 255 : 0;
+                pgmImage.imgMatrix[i][j] = (pgmImage.imgMatrix[i][j] > threshold) ? 255 : 0;
             }
         }
     }
 
 
     //method to write the cover to the imgMatrix using the list of Isothetic Polygon vertices
-    public static void writeCoverToImgMatrix(PgmImage pgmImage, ArrayList<Vertex> vertices){
-        Iterator iterator = vertices.iterator();
-        Vertex start = (Vertex) iterator.next();
-        Vertex vertex = start;
-        Vertex nextVertex = null;
+    public static void writeCoverToImgMatrix(PgmImage pgmImage, ArrayList<Vertex> vertices, Logger LOGGER){
+        if (vertices.isEmpty() == false) {
+            Iterator iterator = vertices.iterator();
+            Vertex start = (Vertex) iterator.next();
+            Vertex vertex = start;
+            Vertex nextVertex = null;
 
-        while (nextVertex != start){
+            while (nextVertex != start) {
 
-            if (iterator.hasNext()){
-                nextVertex = (Vertex) iterator.next();
-                writeEdgetoImgMatrix(pgmImage, vertex, nextVertex);
-                vertex = nextVertex;
+                if (iterator.hasNext()) {
+                    nextVertex = (Vertex) iterator.next();
+                    writeEdgetoImgMatrix(pgmImage, vertex, nextVertex);
+                    vertex = nextVertex;
+                } else {
+                    nextVertex = start;
+                    writeEdgetoImgMatrix(pgmImage, vertex, nextVertex);
+                }
             }
-            else {
-                nextVertex = start;
-                writeEdgetoImgMatrix(pgmImage, vertex, nextVertex);
-            }
+        }
+        else {
+            LOGGER.warning("Vertex list for the Isothetic Polygon is empty");
+            System.exit(-1);
         }
     }
 
     //method to write one edge of the Isothetic polygon from vertex1<iFrom, jFrom> to vertex2 <iTo, jTo> into the imgMatrix of pgmImage
     private static void writeEdgetoImgMatrix(PgmImage pgmImage, Vertex vertex, Vertex nextVertex){
-
         /*vertices' co-ordinates, saving separately because we may need to decrease any one of them because vertex may line on the max edges
         of the image and vertex could come out like <400, 0> and 400 index does not exist so we may need to decrement it.
          */
@@ -189,18 +208,20 @@ public class ImgReadWrite {
     }
 
     //write pgmImg object to a .pgm file
-    public static void writeImgToFile(PgmImage pgmImage){
+    public static void writeImgToFile(PgmImage pgmImage, Logger LOGGER){
         FileOutputStream fileOutputStream = null;
         DataOutputStream dataOutputStream = null;
         try {
             fileOutputStream = new FileOutputStream(pgmImage.path);
             dataOutputStream = new DataOutputStream(fileOutputStream);
 
+            LOGGER.info("Writing the pgmImage object parameters i.e. header to .pgm file");
             dataOutputStream.writeBytes(pgmImage.imgType + "\n");
             dataOutputStream.writeBytes("# Created for Final Year Project, group 09 - 2016, CSE, NIT SIlchar" + "\n");
             dataOutputStream.writeBytes(String.valueOf(pgmImage.imgWidth) + " " + String.valueOf(pgmImage.imgHeight) + "\n");
             dataOutputStream.writeBytes(String.valueOf(pgmImage.maxIntensity) + "\n");
 
+            LOGGER.info("Writing image pixel intensities from pgmImage object to .pgm file");
             for (int i = 0; i < pgmImage.imgHeight; i++){
                 for (int j = 0; j < pgmImage.imgWidth; j++){
                     dataOutputStream.writeByte(pgmImage.imgMatrix[i][j]);
@@ -208,11 +229,14 @@ public class ImgReadWrite {
             }
 
         } catch (FileNotFoundException e) {
+            LOGGER.warning("Destination .pgm file not found");
             e.printStackTrace();
         } catch (IOException e) {
+            LOGGER.warning("Unable to write in the destination .pgm file");
             e.printStackTrace();
         } finally {
             try {
+                LOGGER.info("Closing the destination .pgm file dataOutputStream");
                 dataOutputStream.close();
             } catch (IOException e) {
                 e.printStackTrace();
