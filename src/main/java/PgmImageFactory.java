@@ -9,7 +9,11 @@ import java.util.Properties;
 public class PgmImageFactory {
 
     //method to create PgmImage object and initializing the filePath variable
+<<<<<<< HEAD
     PgmImage create(String filePath){
+=======
+    public static PgmImage create(String filePath){
+>>>>>>> c4b23e69e32a5e028ddb75f241d6d7be7453f631
         PgmImage pgmImage = new PgmImage(filePath);
 
         return pgmImage;
@@ -17,7 +21,11 @@ public class PgmImageFactory {
 
 
     //method to create a copy of a PgmImage object
+<<<<<<< HEAD
     PgmImage createCopy(PgmImage pgmImage, String filePath){
+=======
+    public static PgmImage createCopy(PgmImage pgmImage, String filePath){
+>>>>>>> c4b23e69e32a5e028ddb75f241d6d7be7453f631
         PgmImage temp = new PgmImage(filePath);
 
         //copy the type
@@ -38,6 +46,7 @@ public class PgmImageFactory {
         return temp;
     }
 
+<<<<<<< HEAD
     PgmImage createCopy(PgmImage pgmImage, String filePath, int greyValue){
         PgmImage temp = new PgmImage(filePath);
 
@@ -65,6 +74,11 @@ public class PgmImageFactory {
 
     //creates white images
     PgmImage createBlank(String filePath, String imgType, int imgWidth, int imgHeight, int maxIntensity){
+=======
+
+    //creates white images
+    public static PgmImage createBlank(String filePath, String imgType, int imgWidth, int imgHeight, int maxIntensity){
+>>>>>>> c4b23e69e32a5e028ddb75f241d6d7be7453f631
         PgmImage temp = new PgmImage(filePath);
 
         temp.imgType = imgType;

@@ -73,10 +73,13 @@ public class Test {
             System.out.println(vertex.i + ",    " + vertex.j + ",   " + vertex.angle);
         }
     }
+<<<<<<< HEAD
 
     public static void printStringArrayContent(String[] list){
         for(String x: list){
             System.out.println(x);
         }
     }
+=======
+>>>>>>> c4b23e69e32a5e028ddb75f241d6d7be7453f631
 }
