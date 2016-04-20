@@ -1,4 +1,5 @@
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -8,38 +9,10 @@ import java.util.List;
 public class Test {
     private  static int d = 10;
     public static void main(String[] args) {
-        /*FileInputStream fileInputStream = null;
-        try {
-            fileInputStream = new FileInputStream("E:\\learn\\academic\\final year project\\isothetic cover\\programs\\isothetic_cover\\src\\main\\resources\\abcd.txt");
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        DataInputStream dataInputStream = new DataInputStream(fileInputStream);
-        try {
-            int i = 0;
-            String line = null;
-            while (dataInputStream.available() != 0){
-                line = dataInputStream.readLine();
-                System.out.println(line);
-                System.out.println(i++);
-                System.out.println(line.length());
-                System.out.println(line.indexOf('#'));
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
-
-        int[][] a = new int[10][10];
-
-        printMatrix(a);
-
-        for (int[] b: a){
-            for (int x: b){
-                x = 1;
-            }
-        }
-        printMatrix(a);
-
+        File file = new File("E:\\learn\\academic\\final year project\\isothetic cover\\programs\\isothetic_cover\\src\\main\\resources\\A_raw_copy.pgm");
+        System.out.println(file.getPath());
+        System.out.println(file.getName());
+        System.out.println(file.getAbsolutePath());
     }
 
     public static void increment(){
@@ -74,12 +47,31 @@ public class Test {
         }
     }
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> divye
 
     public static void printStringArrayContent(String[] list){
         for(String x: list){
             System.out.println(x);
         }
     }
+<<<<<<< HEAD
 =======
 >>>>>>> c4b23e69e32a5e028ddb75f241d6d7be7453f631
+=======
+
+    public static void print2DListcontents(ArrayList<ArrayList<Vertex>> list2D){
+        for(ArrayList<Vertex> list : list2D){
+            for (Vertex vertex : list){
+                System.out.print(vertex.i + "," + vertex.j + "," + vertex.angle + " | ");
+            }
+            System.out.println();
+        }
+    }
+
+    public  static  void printVertex(Vertex vertex){
+        System.out.println(vertex.i + ", " + vertex.j + ", " + vertex.angle);
+    }
+>>>>>>> divye
 }

@@ -3,6 +3,10 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+<<<<<<< HEAD
+=======
+import java.util.Iterator;
+>>>>>>> divye
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,6 +29,16 @@ public class DirectoryImagesIsotheticMain {
         PgmImageFactory pgmImageFactory = new PgmImageFactory();
         //creating ImgReaderWriter object to read and write the image and pgmImage object
         ImgReaderWriter imgReaderWriter = new ImgReaderWriter();
+<<<<<<< HEAD
+=======
+        //creating an object of IsotheticCoverCalc class
+        IsotheticCoverCalc isotheticCoverCalc = new IsotheticCoverCalc();
+        //creating an object of IsotheticOCR class
+        IsotheticOCR isotheticOCR = new IsotheticOCR();
+
+        //arraylist to store all the pgmImage objects in a directory
+        ArrayList<PgmImage> pgmImages = new ArrayList();
+>>>>>>> divye
 
         String configFile = "E:\\learn\\academic\\final year project\\isothetic cover\\programs\\isothetic_cover\\src\\main\\resources\\config.properties";
 
@@ -79,11 +93,19 @@ public class DirectoryImagesIsotheticMain {
         }
 
         //for each file in the folder
+<<<<<<< HEAD
         for(String fileName: sourcePgmFileList){
             File sourcePgmFile = new File(fileName);
 
             //Checking whether the file is a .pgm file or not
             if(!fileName.substring(fileName.indexOf('.')+1).equals("pgm")){
+=======
+        for(String fileName: sourcePgmFileList) {
+            File sourcePgmFile = new File(sourceImgDirectory.getPath() + File.separatorChar + fileName);
+
+            //Checking whether the file is a .pgm file or not
+            if (!fileName.substring(fileName.indexOf('.') + 1).equals("pgm")) {
+>>>>>>> divye
                 LOGGER.warning("Not a pgm file : " + fileName);
                 LOGGER.info("Moving to next file");
                 continue;
@@ -91,9 +113,21 @@ public class DirectoryImagesIsotheticMain {
 
             //creating the pgmImage object from using the factory, as per the properties configured in the property file
             LOGGER.info("Creating new pgmImage object to store information from source pgm file");
+<<<<<<< HEAD
             PgmImage sourcePgmImage = pgmImageFactory.create(sourceImgDirectory.getPath()+sourceImgDirectory.separatorChar+sourcePgmFile.getName());
             LOGGER.info("sourcePgmImage Object Successfully Created");
 
+=======
+            PgmImage temp = pgmImageFactory.create(sourcePgmFile.getPath());
+            temp.sourcePgmFile = sourcePgmFile;
+            pgmImages.add(temp);
+            LOGGER.info("sourcePgmImage Object Successfully Created");
+
+        }
+
+
+        for (PgmImage sourcePgmImage : pgmImages) {
+>>>>>>> divye
             //initializing the parameters (type, width, height, max pixel intensity) and the image matrix which contains the pixel intensities
             LOGGER.info("Initializing the sourcePgmImage object");
             imgReaderWriter.init(sourcePgmImage, properties, LOGGER);
@@ -101,11 +135,26 @@ public class DirectoryImagesIsotheticMain {
 
             //binarize the imgMatrix
             LOGGER.info("binarizing the image in sourcePgmImage");
+<<<<<<< HEAD
             imgReaderWriter.binarizeImgMatrix(sourcePgmImage, properties, LOGGER);
             LOGGER.info("binarization completed successfully");
 
             //creating an object of IsotheticCoverCalc class
             IsotheticCoverCalc isotheticCoverCalc = new IsotheticCoverCalc();
+=======
+            imgReaderWriter.binarizeImgMatrix(sourcePgmImage, properties);
+            LOGGER.info("binarization completed successfully");
+
+            //get image dimensions
+            LOGGER.info("Getting object dimensions in the image");
+            imgReaderWriter.getObjectDimentions(sourcePgmImage);
+            LOGGER.info("Object dimensions successfully fetched from the image");
+
+            //centralize the object in the image
+            LOGGER.info("Centralizing the object in the image...");
+            imgReaderWriter.centralize(sourcePgmImage);
+            LOGGER.info("Object successfully centralized");
+>>>>>>> divye
 
             //create the raw Me matrix (Unit Edge Matrix)
             LOGGER.info("Creating the Unit Edge Matrix");
@@ -127,6 +176,7 @@ public class DirectoryImagesIsotheticMain {
             isotheticCoverCalc.setUnitSquareMatrix(unitSquareMatrix, unitEdgeMatrix);
             LOGGER.info("unit square matrix successfully created");
 
+<<<<<<< HEAD
             //get the list of the vertices in the Isothetic cover polygon
             LOGGER.info("Creating the list of Isothetic polygon vertices");
             ArrayList<Vertex> isotheticVertices = isotheticCoverCalc.listVertices(sourcePgmImage, unitSquareMatrix, properties, LOGGER);
@@ -136,6 +186,25 @@ public class DirectoryImagesIsotheticMain {
             String destinationImgWithCover = destinationImgWithCoverDirectoryPath+sourcePgmFile.separatorChar+sourcePgmFile.getName().substring(0, sourcePgmFile.getName().indexOf('.'))+"_withCover_"+gridSize+".pgm";
             LOGGER.info("Read file path to write image back with cover");
             String destinationCover = destinationCoverOnlyDirectoryPath+sourcePgmFile.separatorChar+sourcePgmFile.getName().substring(0, sourcePgmFile.getName().indexOf('.'))+"_Cover_"+gridSize+".pgm";
+=======
+            LOGGER.info("Creating iSortedList");
+            sourcePgmImage.iSortedList = isotheticCoverCalc.getISortedList(sourcePgmImage, unitSquareMatrix, properties, LOGGER);
+            LOGGER.info("iSortedList successfully created");
+
+            LOGGER.info("Creating jSortedList");
+            sourcePgmImage.jSortedList = isotheticCoverCalc.getJSortedList(sourcePgmImage.iSortedList, LOGGER);
+            LOGGER.info("iSortedList successfully created");
+
+            //get the list of the vertices in the Isothetic cover polygon
+            LOGGER.info("Creating the list of Isothetic polygon vertices");
+            sourcePgmImage.isotheticVertices = isotheticCoverCalc.listVertices(sourcePgmImage.iSortedList, sourcePgmImage.jSortedList, LOGGER);
+            LOGGER.info("List of isothetic polygon vertices successfully created");
+
+            //destination file paths
+            String destinationImgWithCover = destinationImgWithCoverDirectoryPath + File.separatorChar + sourcePgmImage.sourcePgmFile.getName().substring(0, sourcePgmImage.sourcePgmFile.getName().indexOf('.')) + "_withCover_" + gridSize + ".pgm";
+            LOGGER.info("Read file path to write image back with cover");
+            String destinationCover = destinationCoverOnlyDirectoryPath + File.separatorChar + sourcePgmImage.sourcePgmFile.getName().substring(0, sourcePgmImage.sourcePgmFile.getName().indexOf('.')) + "_Cover_" + gridSize + ".pgm";
+>>>>>>> divye
             LOGGER.info("Read file path to write back the cover only");
 
             //create a light copy (image is lighter like grey, instead of black)copy of the soucePgmImage to create image-with-cover file
@@ -160,11 +229,19 @@ public class DirectoryImagesIsotheticMain {
 
             //write cover to img as well as blank image
             LOGGER.info("Writing cover information to the imageMatrix of copy of source pgmImage object to write back image with cover");
+<<<<<<< HEAD
             imgReaderWriter.writeCoverToImgMatrix(destinationPgmImageWithCover, isotheticVertices, LOGGER);
             LOGGER.info("Cover information successfully written to the image matrix of copy of source pgm image object");
 
             LOGGER.info("Writing cover information to the imageMatrix of blank pgmImage object to write back only cover");
             imgReaderWriter.writeCoverToImgMatrix(destinationPgmImageCover, isotheticVertices, LOGGER);
+=======
+            imgReaderWriter.writeCoverToImgMatrix(destinationPgmImageWithCover, sourcePgmImage.isotheticVertices, LOGGER);
+            LOGGER.info("Cover information successfully written to the image matrix of copy of source pgm image object");
+
+            LOGGER.info("Writing cover information to the imageMatrix of blank pgmImage object to write back only cover");
+            imgReaderWriter.writeCoverToImgMatrix(destinationPgmImageCover, sourcePgmImage.isotheticVertices, LOGGER);
+>>>>>>> divye
             LOGGER.info("Cover information successfully written to the image matrix of blank pgm image object");
 
             //write the pgmImage to .pgm file
@@ -179,6 +256,27 @@ public class DirectoryImagesIsotheticMain {
             System.out.println(destinationPgmImageCover.path + " successfully created");
             System.out.println(destinationPgmImageWithCover.path + " successfully created");
 
+<<<<<<< HEAD
+=======
+            LOGGER.info("Checking Symmetry score");
+
+            //creating 2D lists
+            sourcePgmImage.iSorted2DList = isotheticCoverCalc.getISorted2DList(sourcePgmImage);
+            sourcePgmImage.jSorted2DList = isotheticCoverCalc.getJSorted2DList(sourcePgmImage);
+
+            LOGGER.info("Checking vertical symmetry for : " + sourcePgmImage.sourcePgmFile.getName());
+            isotheticOCR.verticalSymmetry(sourcePgmImage, properties, LOGGER);
+            LOGGER.info("Vertical symmetry check done for : " + sourcePgmImage.sourcePgmFile.getName());
+
+            LOGGER.info("Checking horizontal symmetry for : " + sourcePgmImage.sourcePgmFile.getName());
+            isotheticOCR.horizontalSymmetry(sourcePgmImage, properties, LOGGER);
+            LOGGER.info("Horizontal symmetry check done for : " + sourcePgmImage.sourcePgmFile.getName());
+        }
+
+        //print symmetry status
+        for (PgmImage pgmImage : pgmImages){
+            System.out.println(pgmImage.sourcePgmFile.getName() + " is " + ((pgmImage.verticalSymmetricity == 1)?"vertically symmetric": "vertically assymetric") + " and " + ((pgmImage.horizontalSymmetricity == 1)?"horizontally symmetric": "horizontally assymetric"));
+>>>>>>> divye
         }
     }
 }
