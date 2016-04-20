@@ -10,16 +10,22 @@ import java.util.logging.Logger;
 public class IsotheticCoverCalc {
 
     //flag to get the direction of the outgoing edge from first 90 degree vertex
-    private static int startDirection = 0;
+    private int startDirection;
 
-    //flag to get the direction of each edge in nextVertex() method, 1 for north, 2 for east, 3 for south and 4 for west
-    private static int direction;
+    /*//flag to get the direction of each edge in nextVertex() method, 1 for north, 2 for east, 3 for south and 4 for west
+    private int direction;*/
 
     //flag to keep track of the first (starting)) 90 degree vertex (C1 vertex)
-    private static int c1flag = 1;
+    private int c1flag;
+
+    //flag to get the direction of each edge in nextVertex() method, 1 for north, 2 for east, 3 for south and 4 for west
+    private int direction;
+
+    //Vertex to keep track of the starting Vertex
+    private Vertex start;
 
     //method to create raw unitEdgeMatrix according to the imgMatrix dimensions and grid Size
-    public static int[][] createUnitEdgeMatrix(PgmImage pgmImage, Properties properties){
+    int[][] createUnitEdgeMatrix(PgmImage pgmImage, Properties properties){
 
         int gridSize = Integer.parseInt(properties.getProperty("gridSize"));
         System.out.println("Grid size = " + gridSize);
@@ -31,15 +37,14 @@ public class IsotheticCoverCalc {
         int colMax = jMapping(pgmImage.imgWidth, gridSize);
 
         //creating the raw UnitEdgeMatrix
-        int[][] unitEdgeMatrix = new int[rowMax+1][colMax+1]; //adding 1 because index starts from 0
 
-        return unitEdgeMatrix;
+        return new int[rowMax+1][colMax+1];
     }
 
     /*
     Method to set (0 or 1 in) the unitEdgeMatrix according to the information in the imgMatrix
      */
-    public static void setUnitEdgeMatrix(int[][] unitEdgeMatrix, PgmImage pgmImage, Properties properties){
+    void setUnitEdgeMatrix(int[][] unitEdgeMatrix, PgmImage pgmImage, Properties properties){
 
         int gridSize = Integer.parseInt(properties.getProperty("gridSize"));
         System.out.println("Grid size = " + gridSize);
@@ -99,7 +104,7 @@ public class IsotheticCoverCalc {
     }
 
     //method to create the raw unitSquareMatrix
-    public static int[][] createUnitSquareMatrix(PgmImage pgmImage, Properties properties){
+    int[][] createUnitSquareMatrix(PgmImage pgmImage, Properties properties){
 
         int gridSize = Integer.parseInt(properties.getProperty("gridSize"));
         System.out.println("Grid size = " + gridSize);
@@ -108,13 +113,11 @@ public class IsotheticCoverCalc {
         int rowMax = pgmImage.imgHeight/gridSize;
         int colMax = pgmImage.imgWidth/gridSize;
 
-        int[][] unitSquareMatrix = new int[rowMax][colMax];
-
-        return unitSquareMatrix;
+        return new int[rowMax][colMax];
     }
 
     //method to set (0 or 1 in) the unitSquareMatrix according to the information in teh unitEdgeMatrix
-    public static void setUnitSquareMatrix(int[][] unitSquareMatrix, int[][] unitEdgeMatrix){
+    void setUnitSquareMatrix(int[][] unitSquareMatrix, int[][] unitEdgeMatrix){
 
         //no. of rows in the unitSquareMatrix
         int rowMax = unitSquareMatrix.length;
@@ -142,29 +145,20 @@ public class IsotheticCoverCalc {
         }
     }
 
-    //method to find out the Isothetic cover vertices
-    public static ArrayList<Vertex> listVertices(PgmImage pgmImage, int[][] unitSquareMatrix, Properties properties, Logger LOGGER){
+
+    //method to generate the iSortedList: vertices' list sorted on i and j with i as primary key and j as secondary key
+    ArrayList<Vertex> getISortedList(PgmImage pgmImage, int[][] unitSquareMatrix, Properties properties, Logger LOGGER){
+        startDirection = 0;
+        c1flag = 1;
         int gridSize = Integer.parseInt(properties.getProperty("gridSize"));
         System.out.println("Grid size = " + gridSize);
         int iMax = pgmImage.imgHeight/gridSize;
         int jMax = pgmImage.imgWidth/gridSize;
 
         //list to store the vertices, sorted in increasing order with primary key i and secondary key j
-        ArrayList<Vertex> iSortedList = new ArrayList<>();
-
-
-        //list to store the vertices, sorted in increasing order with primary key j and secondary key i
-        ArrayList<Vertex> jSortedList;
-
-        //list to store the vertices in the Isothetic polygon in the order of traversal starting from the start Vertex
-        LOGGER.info("Creating list to store the vertices of isothetic polygon in traversal order");
-        ArrayList<Vertex> isotheticVertices = new ArrayList<>();
-        LOGGER.info("isotheticVertices list successfully created");
+        ArrayList<Vertex> iSortedList = new ArrayList();
 
         Vertex vertex;
-        Vertex start = null;
-        Vertex temp;
-
 
         LOGGER.info("Creating list with vertices sorted in increasing order with i as primary key and j as secondary key");
         for(int row = 0; row <= pgmImage.imgHeight; row+=gridSize){
@@ -216,6 +210,15 @@ public class IsotheticCoverCalc {
         }
         LOGGER.info("iSortedList successfully created");
 
+        return  iSortedList;
+    }
+
+
+    //method to generate jSortedList: vertices' list sorted on i and j with j as primary key and i as secondary key
+    ArrayList<Vertex> getJSortedList(ArrayList<Vertex> iSortedList, Logger LOGGER){
+        //list to store the vertices, sorted in increasing order with primary key j and secondary key i
+        ArrayList<Vertex> jSortedList;
+
         //Check if no vertices in the list
         if (iSortedList.isEmpty()) {
             LOGGER.warning("No vertices in the iSortedList");
@@ -223,10 +226,8 @@ public class IsotheticCoverCalc {
             System.exit(-1);
         }
 
-        //iSortedList is sorted on i (Primary Key) and j (Secondary Key)
-
         //copying iSortedList to jSortedList
-        jSortedList = new ArrayList<>(iSortedList);
+        jSortedList = new ArrayList(iSortedList);
 
         /*
         jSortedList is already sorted on i as Primary key and j as Secondary key, and Since Collections.sort() is a stable sort method,
@@ -236,7 +237,19 @@ public class IsotheticCoverCalc {
         Collections.sort(jSortedList, new VertexJComparator());
         LOGGER.info("jSortedList successfully created");
 
+        return jSortedList;
+    }
+
+    //method to find out the Isothetic cover vertices
+    ArrayList<Vertex> listVertices(ArrayList<Vertex> iSortedList, ArrayList<Vertex> jSortedList, Logger LOGGER){
+
+        //list to store the vertices in the Isothetic polygon in the order of traversal starting from the start Vertex
+        ArrayList<Vertex> isotheticVertices = new ArrayList();
+
+        //flag to get the direction of each edge in nextVertex() method, 1 for north, 2 for east, 3 for south and 4 for west
         direction = startDirection;
+
+        Vertex temp;
 
         LOGGER.info("Creating isotheticVertices list which stores vertices in traversal order");
         temp = start;
@@ -251,9 +264,78 @@ public class IsotheticCoverCalc {
         return  isotheticVertices;
     }
 
+    //method to create 2D list which stores the isothetic cover vertices in i sorted manner, row wise and j sorted manner, column wise
+    ArrayList<ArrayList<Vertex>> getISorted2DList(PgmImage pgmImage){
+        ArrayList<ArrayList<Vertex>> iSorted2DList = new ArrayList<ArrayList<Vertex>>();
+
+        //take the first element, to start with
+        Vertex prevVertex = pgmImage.iSortedList.get(0);
+        Iterator<Vertex> iterator = pgmImage.iSortedList.iterator();
+
+        Vertex temp;
+        ArrayList<Vertex> iVertexList = new ArrayList<Vertex>();
+
+        while(iterator.hasNext()){
+
+            temp = iterator.next();
+
+            if(pgmImage.isotheticVertices.indexOf(temp) != -1){
+
+                //if row has changed (i has changed), then we need to add the list created to the 2D list and clear it, for next i
+                if (temp.i != prevVertex.i){
+                    iSorted2DList.add(new ArrayList<Vertex>(iVertexList));
+                    iVertexList.clear();
+                }
+                iVertexList.add(temp);
+                prevVertex = temp;
+            }
+        }
+
+        //add the iVertexList created in the last
+        if (!iVertexList.isEmpty()){
+            iSorted2DList.add(iVertexList);
+        }
+
+        return  iSorted2DList;
+    }
+
+    //method to create 2D list which stores the isothetic cover vertices in j sorted manner, row wise and i sorted manner, column wise
+    ArrayList<ArrayList<Vertex>> getJSorted2DList(PgmImage pgmImage){
+        ArrayList<ArrayList<Vertex>> jSorted2DList = new ArrayList<ArrayList<Vertex>>();
+
+        Vertex prevVertex = pgmImage.jSortedList.get(0);
+        Iterator<Vertex> iterator = pgmImage.jSortedList.iterator();
+
+        Vertex temp;
+        ArrayList<Vertex> jVertexList = new ArrayList<Vertex>();
+
+        while(iterator.hasNext()){
+
+            temp = iterator.next();
+
+            if(pgmImage.isotheticVertices.indexOf(temp) != -1){
+
+                //if row has changed (i has changed), then we need to add the list created to the 2D list and clear it, for next i
+                if (temp.j != prevVertex.j){
+                    jSorted2DList.add(new ArrayList<Vertex>(jVertexList));
+                    jVertexList.clear();
+                }
+                jVertexList.add(temp);
+                prevVertex = temp;
+            }
+        }
+
+        //add the iVertexList created in the last
+        if (!jVertexList.isEmpty()){
+            jSorted2DList.add(jVertexList);
+        }
+
+        return  jSorted2DList;
+    }
+
 
     //method to find the next vertex for a vertex based on its incoming edge direction and its position in the iSortedList and jSortedList
-    private static Vertex nextVertex(Vertex vertex, ArrayList<Vertex> iSortedList, ArrayList<Vertex> jSortedList){
+    private Vertex nextVertex(Vertex vertex, ArrayList<Vertex> iSortedList, ArrayList<Vertex> jSortedList){
 
         //Finding the position of the source vertex in the iSortedList and jSortedList
         int iPointer = iSortedList.indexOf(vertex);
@@ -297,22 +379,22 @@ public class IsotheticCoverCalc {
     }
 
     //method to map i (row no.) for a horizontal edge from a vertex (i, j) in the grid
-    private static int iMappingHorizontalEdge(int i, int gridSize){
+    private int iMappingHorizontalEdge(int i, int gridSize){
         return 2*i/gridSize;
     }
 
     //method to map j (column no.) for any edge (horizontal or vertical) from a vertex (i, j) in the grid
-    private static int jMapping(int j, int gridSize){
+    private int jMapping(int j, int gridSize){
         return j/gridSize;
     }
 
     //method to map i (row no.) for a vertical edge from a vertex (i, j) in the grid
-    private static int iMappingVerticalEdge(int i, int gridSize){
+    private int iMappingVerticalEdge(int i, int gridSize){
         return 2*i/gridSize + 1;
     }
 
     //method to check the case (C0, C1, C2, C3, C4), returns the no. of square containing the image, associated with a vertex
-    private  static int checkCase(int iVertex, int jVertex, int iMax, int jMax, int[][] unitSquareMatrix){
+    private int checkCase(int iVertex, int jVertex, int iMax, int jMax, int[][] unitSquareMatrix){
         int caseType = 0;
 
         //if vertex lies in the middle of the grid, having all the four squares associated with it

@@ -9,7 +9,7 @@ import java.util.Properties;
 public class PgmImageFactory {
 
     //method to create PgmImage object and initializing the filePath variable
-    public static PgmImage create(String filePath){
+    PgmImage create(String filePath){
         PgmImage pgmImage = new PgmImage(filePath);
 
         return pgmImage;
@@ -17,7 +17,7 @@ public class PgmImageFactory {
 
 
     //method to create a copy of a PgmImage object
-    public static PgmImage createCopy(PgmImage pgmImage, String filePath){
+    PgmImage createCopy(PgmImage pgmImage, String filePath){
         PgmImage temp = new PgmImage(filePath);
 
         //copy the type
@@ -38,9 +38,33 @@ public class PgmImageFactory {
         return temp;
     }
 
+    PgmImage createCopy(PgmImage pgmImage, String filePath, int greyValue){
+        PgmImage temp = new PgmImage(filePath);
+
+        //copy the type
+        temp.imgType = new String(pgmImage.imgType);
+
+        //Copy other parameters: width, height and intensity
+        temp.imgWidth = pgmImage.imgWidth;
+        temp.imgHeight = pgmImage.imgHeight;
+        temp.maxIntensity = pgmImage.maxIntensity;
+
+        temp.imgMatrix = new int[temp.imgHeight][temp.imgWidth];
+
+        //copy the imgMatrix
+        for (int i = 0; i < pgmImage.imgHeight; i++){
+            for (int j = 0; j < pgmImage.imgWidth; j++){
+                //if pgmImage pixel is white then temp pixel is also white otherwise grey
+                temp.imgMatrix[i][j] = pgmImage.imgMatrix[i][j] == 255 ? 255 : greyValue;
+            }
+        }
+
+        return temp;
+    }
+
 
     //creates white images
-    public static PgmImage createBlank(String filePath, String imgType, int imgWidth, int imgHeight, int maxIntensity){
+    PgmImage createBlank(String filePath, String imgType, int imgWidth, int imgHeight, int maxIntensity){
         PgmImage temp = new PgmImage(filePath);
 
         temp.imgType = imgType;
