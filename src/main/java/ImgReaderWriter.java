@@ -1,5 +1,6 @@
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.logging.Logger;
@@ -11,7 +12,7 @@ import java.util.logging.Logger;
 public class ImgReaderWriter {
 
     //method to intialize the parameters in the pgmImage object e.g. imgWidth, imgHeight, etc. from the .pgm source file
-    public void init(PgmImage pgmImage, Properties properties, Logger LOGGER){
+    void init(PgmImage pgmImage, Properties properties, Logger LOGGER){
         FileInputStream fileInputStream = null;
         DataInputStream dataInputStream = null;
         try {
@@ -133,20 +134,100 @@ public class ImgReaderWriter {
 
 
     //method to binarize the imgMatrix in the pgmImage object, i.e. if pixels are lighter than a threshold, make white (255) otherwise black (0)
-    public void binarizeImgMatrix(PgmImage pgmImage, Properties properties, Logger LOGGER){
+    void binarizeImgMatrix(PgmImage pgmImage, Properties properties){
         //reading the threshold intensity from the config.properties file
         int threshold = Integer.parseInt(properties.getProperty("pixelThreshold"));
         System.out.println("Threshold value = " + threshold);
         for (int i = 0; i < pgmImage.imgHeight; i++){
             for(int j = 0; j < pgmImage.imgWidth; j++){
-                pgmImage.imgMatrix[i][j] = (pgmImage.imgMatrix[i][j] == threshold) ? 255 : 0;
+                pgmImage.imgMatrix[i][j] = (pgmImage.imgMatrix[i][j] > threshold) ? 255 : 0;
             }
         }
     }
 
+    //sets the imin, imax, jmin and jmax variables in the PgmImage object to the corresponding object position values
+    void getObjectDimentions(PgmImage pgmImage){
+
+        //to keep track of first non white pixel
+        int flag = 0;
+
+        for(int i = 0; i < pgmImage.imgHeight; i++){
+            for(int j = 0; j < pgmImage.imgWidth; j++){
+                if(pgmImage.imgMatrix[i][j] != 255){
+
+                    //if first non white pixel
+                    if(flag == 0){
+                        pgmImage.imin = i;
+                        pgmImage.jmin = j;
+                        pgmImage.imax = i;
+                        pgmImage.jmax = j;
+                        flag++;
+                    }
+                    else {
+                        if (i < pgmImage.imin)
+                            pgmImage.imin = i;
+                        if (j < pgmImage.jmin)
+                            pgmImage.jmin = j;
+                        if (i > pgmImage.imax)
+                            pgmImage.imax = i;
+                        if (j > pgmImage.jmax)
+                            pgmImage.jmax = j;
+                    }
+                }
+            }
+        }
+    }
+
+    //method to centralize the object in the image
+    void centralize(PgmImage pgmImage){
+        int objectHeight = 0;
+        int objectWidth = 0;
+        objectHeight = pgmImage.imax - pgmImage.imin + 1;
+        objectWidth = pgmImage.jmax - pgmImage.jmin + 1;
+
+        //variables to keep track of starting i and j of new pgmImage object
+        int iStart, jStart;
+
+        /*if((pgmImage.imgHeight - objectHeight)%2 == 0) {
+            iStart = (pgmImage.imgHeight - objectHeight) / 2 - 1;
+        }
+        else {
+            iStart = (pgmImage.imgHeight - objectHeight) / 2;
+        }
+        if((pgmImage.imgWidth - objectWidth)%2 == 0){
+            jStart = (pgmImage.imgWidth - objectWidth) / 2 - 1;
+        }
+        else {
+            jStart = (pgmImage.imgWidth - objectWidth) / 2;
+        }*/
+
+        iStart = (pgmImage.imgHeight - objectHeight) / 2;
+        jStart = (pgmImage.imgWidth - objectWidth) / 2;
+
+        int[][] temp = new int[pgmImage.imgHeight][pgmImage.imgWidth];
+
+        //make the image white
+        for(int[] array : temp){
+            Arrays.fill(array, 255);
+        }
+
+        for(int i = pgmImage.imin, iNew = iStart; i <= pgmImage.imax; i++, iNew++){
+            for(int j = pgmImage.jmin, jNew = jStart; j <= pgmImage.jmax; j++, jNew++){
+                temp[iNew][jNew] = pgmImage.imgMatrix[i][j];
+            }
+        }
+
+        pgmImage.imgMatrix = temp;
+        pgmImage.imin = iStart;
+        pgmImage.imax = iStart + objectHeight - 1;
+        pgmImage.jmin = jStart;
+        pgmImage.jmax = jStart + objectWidth - 1;
+
+    }
+
 
     //method to write the cover to the imgMatrix using the list of Isothetic Polygon vertices
-    public void writeCoverToImgMatrix(PgmImage pgmImage, ArrayList<Vertex> vertices, Logger LOGGER){
+    void writeCoverToImgMatrix(PgmImage pgmImage, ArrayList<Vertex> vertices, Logger LOGGER){
         if (vertices.isEmpty() == false) {
             Iterator iterator = vertices.iterator();
             Vertex start = (Vertex) iterator.next();
@@ -208,7 +289,7 @@ public class ImgReaderWriter {
     }
 
     //write pgmImg object to a .pgm file
-    public void writeImgToFile(PgmImage pgmImage, Logger LOGGER){
+    void writeImgToFile(PgmImage pgmImage, Logger LOGGER){
         FileOutputStream fileOutputStream = null;
         DataOutputStream dataOutputStream = null;
         try {
