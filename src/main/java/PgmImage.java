@@ -47,6 +47,7 @@ public class PgmImage {
     int horizontalSymmetricity;
     int totalHeadSkip; //variable to keep track of total skips while traversing the cover to check for the symmetry
     int totalTailSkip;
+    int maxSkipStreak;
     int maximumHeadSkipStreak;
     int maximumTailSkipStreak;
 }

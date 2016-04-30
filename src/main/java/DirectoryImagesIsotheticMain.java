@@ -3,7 +3,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -214,19 +213,19 @@ public class DirectoryImagesIsotheticMain {
             sourcePgmImage.iSorted2DList = isotheticCoverCalc.getISorted2DList(sourcePgmImage);
             sourcePgmImage.jSorted2DList = isotheticCoverCalc.getJSorted2DList(sourcePgmImage);
 
-            LOGGER.info("Checking vertical symmetry for : " + sourcePgmImage.sourcePgmFile.getName());
+            /*LOGGER.info("Checking vertical symmetry for : " + sourcePgmImage.sourcePgmFile.getName());
             isotheticOCR.verticalSymmetry(sourcePgmImage, properties, LOGGER);
-            LOGGER.info("Vertical symmetry check done for : " + sourcePgmImage.sourcePgmFile.getName());
+            LOGGER.info("Vertical symmetry check done for : " + sourcePgmImage.sourcePgmFile.getName());*/
 
-            /*LOGGER.info("Checking horizontal symmetry for : " + sourcePgmImage.sourcePgmFile.getName());
+            LOGGER.info("Checking horizontal symmetry for : " + sourcePgmImage.sourcePgmFile.getName());
             isotheticOCR.horizontalSymmetry(sourcePgmImage, properties, LOGGER);
-            LOGGER.info("Horizontal symmetry check done for : " + sourcePgmImage.sourcePgmFile.getName());*/
+            LOGGER.info("Horizontal symmetry check done for : " + sourcePgmImage.sourcePgmFile.getName());
         }
 
         //print symmetry status
         for (PgmImage pgmImage : pgmImages){
-            System.out.println(pgmImage.sourcePgmFile.getName() + " is " + ((pgmImage.verticalSymmetricity == 1)?"vertically symmetric": "vertically assymetric"));
-//            System.out.println(pgmImage.sourcePgmFile.getName() + " is " + ((pgmImage.horizontalSymmetricity == 1)?"horizontally symmetric": "horizontally assymetric"));
+//            System.out.println(pgmImage.sourcePgmFile.getName() + " is " + ((pgmImage.verticalSymmetricity == 1)?"vertically symmetric": "vertically assymetric") + " - " + pgmImage.maxSkipStreak);
+            System.out.println(pgmImage.sourcePgmFile.getName() + " is " + ((pgmImage.horizontalSymmetricity == 1)?"horizontally symmetric": "horizontally assymetric") + " - " + pgmImage.maxSkipStreak);
         }
     }
 }
