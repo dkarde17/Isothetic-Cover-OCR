@@ -10,23 +10,7 @@ import java.util.logging.Logger;
 public class IsotheticCoverCalc {
 
     //flag to get the direction of the outgoing edge from first 90 degree vertex
-<<<<<<< HEAD
-<<<<<<< HEAD
-    private int startDirection = 0;
-
-    //flag to get the direction of each edge in nextVertex() method, 1 for north, 2 for east, 3 for south and 4 for west
-    private int direction;
-
-    //flag to keep track of the first (starting)) 90 degree vertex (C1 vertex)
-    private int c1flag = 1;
-
-    //method to create raw unitEdgeMatrix according to the imgMatrix dimensions and grid Size
-    int[][] createUnitEdgeMatrix(PgmImage pgmImage, Properties properties){
-=======
-    private static int startDirection = 0;
-=======
     private int startDirection;
->>>>>>> divye
 
     /*//flag to get the direction of each edge in nextVertex() method, 1 for north, 2 for east, 3 for south and 4 for west
     private int direction;*/
@@ -41,12 +25,7 @@ public class IsotheticCoverCalc {
     private Vertex start;
 
     //method to create raw unitEdgeMatrix according to the imgMatrix dimensions and grid Size
-<<<<<<< HEAD
-    public static int[][] createUnitEdgeMatrix(PgmImage pgmImage, Properties properties){
->>>>>>> c4b23e69e32a5e028ddb75f241d6d7be7453f631
-=======
     int[][] createUnitEdgeMatrix(PgmImage pgmImage, Properties properties){
->>>>>>> divye
 
         int gridSize = Integer.parseInt(properties.getProperty("gridSize"));
         System.out.println("Grid size = " + gridSize);
@@ -65,15 +44,7 @@ public class IsotheticCoverCalc {
     /*
     Method to set (0 or 1 in) the unitEdgeMatrix according to the information in the imgMatrix
      */
-<<<<<<< HEAD
-<<<<<<< HEAD
     void setUnitEdgeMatrix(int[][] unitEdgeMatrix, PgmImage pgmImage, Properties properties){
-=======
-    public static void setUnitEdgeMatrix(int[][] unitEdgeMatrix, PgmImage pgmImage, Properties properties){
->>>>>>> c4b23e69e32a5e028ddb75f241d6d7be7453f631
-=======
-    void setUnitEdgeMatrix(int[][] unitEdgeMatrix, PgmImage pgmImage, Properties properties){
->>>>>>> divye
 
         int gridSize = Integer.parseInt(properties.getProperty("gridSize"));
         System.out.println("Grid size = " + gridSize);
@@ -133,15 +104,7 @@ public class IsotheticCoverCalc {
     }
 
     //method to create the raw unitSquareMatrix
-<<<<<<< HEAD
-<<<<<<< HEAD
     int[][] createUnitSquareMatrix(PgmImage pgmImage, Properties properties){
-=======
-    public static int[][] createUnitSquareMatrix(PgmImage pgmImage, Properties properties){
->>>>>>> c4b23e69e32a5e028ddb75f241d6d7be7453f631
-=======
-    int[][] createUnitSquareMatrix(PgmImage pgmImage, Properties properties){
->>>>>>> divye
 
         int gridSize = Integer.parseInt(properties.getProperty("gridSize"));
         System.out.println("Grid size = " + gridSize);
@@ -154,15 +117,7 @@ public class IsotheticCoverCalc {
     }
 
     //method to set (0 or 1 in) the unitSquareMatrix according to the information in teh unitEdgeMatrix
-<<<<<<< HEAD
-<<<<<<< HEAD
     void setUnitSquareMatrix(int[][] unitSquareMatrix, int[][] unitEdgeMatrix){
-=======
-    public static void setUnitSquareMatrix(int[][] unitSquareMatrix, int[][] unitEdgeMatrix){
->>>>>>> c4b23e69e32a5e028ddb75f241d6d7be7453f631
-=======
-    void setUnitSquareMatrix(int[][] unitSquareMatrix, int[][] unitEdgeMatrix){
->>>>>>> divye
 
         //no. of rows in the unitSquareMatrix
         int rowMax = unitSquareMatrix.length;
@@ -190,20 +145,11 @@ public class IsotheticCoverCalc {
         }
     }
 
-<<<<<<< HEAD
-    //method to find out the Isothetic cover vertices
-<<<<<<< HEAD
-    ArrayList<Vertex> listVertices(PgmImage pgmImage, int[][] unitSquareMatrix, Properties properties, Logger LOGGER){
-=======
-    public static ArrayList<Vertex> listVertices(PgmImage pgmImage, int[][] unitSquareMatrix, Properties properties, Logger LOGGER){
->>>>>>> c4b23e69e32a5e028ddb75f241d6d7be7453f631
-=======
 
     //method to generate the iSortedList: vertices' list sorted on i and j with i as primary key and j as secondary key
     ArrayList<Vertex> getISortedList(PgmImage pgmImage, int[][] unitSquareMatrix, Properties properties, Logger LOGGER){
         startDirection = 0;
         c1flag = 1;
->>>>>>> divye
         int gridSize = Integer.parseInt(properties.getProperty("gridSize"));
         System.out.println("Grid size = " + gridSize);
         int iMax = pgmImage.imgHeight/gridSize;
@@ -389,15 +335,7 @@ public class IsotheticCoverCalc {
 
 
     //method to find the next vertex for a vertex based on its incoming edge direction and its position in the iSortedList and jSortedList
-<<<<<<< HEAD
-<<<<<<< HEAD
     private Vertex nextVertex(Vertex vertex, ArrayList<Vertex> iSortedList, ArrayList<Vertex> jSortedList){
-=======
-    private static Vertex nextVertex(Vertex vertex, ArrayList<Vertex> iSortedList, ArrayList<Vertex> jSortedList){
->>>>>>> c4b23e69e32a5e028ddb75f241d6d7be7453f631
-=======
-    private Vertex nextVertex(Vertex vertex, ArrayList<Vertex> iSortedList, ArrayList<Vertex> jSortedList){
->>>>>>> divye
 
         //Finding the position of the source vertex in the iSortedList and jSortedList
         int iPointer = iSortedList.indexOf(vertex);
@@ -441,54 +379,22 @@ public class IsotheticCoverCalc {
     }
 
     //method to map i (row no.) for a horizontal edge from a vertex (i, j) in the grid
-<<<<<<< HEAD
-<<<<<<< HEAD
     private int iMappingHorizontalEdge(int i, int gridSize){
-=======
-    private static int iMappingHorizontalEdge(int i, int gridSize){
->>>>>>> c4b23e69e32a5e028ddb75f241d6d7be7453f631
-=======
-    private int iMappingHorizontalEdge(int i, int gridSize){
->>>>>>> divye
         return 2*i/gridSize;
     }
 
     //method to map j (column no.) for any edge (horizontal or vertical) from a vertex (i, j) in the grid
-<<<<<<< HEAD
-<<<<<<< HEAD
     private int jMapping(int j, int gridSize){
-=======
-    private static int jMapping(int j, int gridSize){
->>>>>>> c4b23e69e32a5e028ddb75f241d6d7be7453f631
-=======
-    private int jMapping(int j, int gridSize){
->>>>>>> divye
         return j/gridSize;
     }
 
     //method to map i (row no.) for a vertical edge from a vertex (i, j) in the grid
-<<<<<<< HEAD
-<<<<<<< HEAD
     private int iMappingVerticalEdge(int i, int gridSize){
-=======
-    private static int iMappingVerticalEdge(int i, int gridSize){
->>>>>>> c4b23e69e32a5e028ddb75f241d6d7be7453f631
-=======
-    private int iMappingVerticalEdge(int i, int gridSize){
->>>>>>> divye
         return 2*i/gridSize + 1;
     }
 
     //method to check the case (C0, C1, C2, C3, C4), returns the no. of square containing the image, associated with a vertex
-<<<<<<< HEAD
-<<<<<<< HEAD
     private int checkCase(int iVertex, int jVertex, int iMax, int jMax, int[][] unitSquareMatrix){
-=======
-    private  static int checkCase(int iVertex, int jVertex, int iMax, int jMax, int[][] unitSquareMatrix){
->>>>>>> c4b23e69e32a5e028ddb75f241d6d7be7453f631
-=======
-    private int checkCase(int iVertex, int jVertex, int iMax, int jMax, int[][] unitSquareMatrix){
->>>>>>> divye
         int caseType = 0;
 
         //if vertex lies in the middle of the grid, having all the four squares associated with it
