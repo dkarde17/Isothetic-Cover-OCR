@@ -25,10 +25,13 @@ public class IsotheticOCR {
 
     private PgmImage pgmImage;
 
+    private int currentCheck; //1 for vertical 0 for horizontal
+
     //method to check vertical symmetry
     void verticalSymmetry(PgmImage pgmImage, Properties properties, Logger LOGGER){
 
         this.pgmImage = pgmImage;
+        this.currentCheck = 1;
 
         int gridSize = Integer.parseInt(properties.getProperty("gridSize"));
         int mid = pgmImage.imgWidth/2; //mirror line
@@ -76,6 +79,8 @@ public class IsotheticOCR {
                 tail = (tail - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
                 counter++;
             }
+            this.counter = counter;
+
         }
 
         //if mirror of head not found then look for <i, mid + d - gridSize>
@@ -100,6 +105,8 @@ public class IsotheticOCR {
                 tail = (tail - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
                 counter++;
             }
+            this.counter = counter;
+
         }
 
         //if still not found then look for <i, mid + d + gridSize>
@@ -123,6 +130,7 @@ public class IsotheticOCR {
                 tail = (tail - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
                 counter++;
             }
+            this.counter = counter;
 
         }
 
@@ -148,6 +156,8 @@ public class IsotheticOCR {
                 tail = (tail - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
                 counter++;
             }
+            this.counter = counter;
+
         }
 
         //if still not found then look for <i - 1, mid + d - gridSize>
@@ -172,6 +182,8 @@ public class IsotheticOCR {
                 tail = (tail - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
                 counter++;
             }
+            this.counter = counter;
+
         }
 
         //if still not found then look for <i - 1, mid + d + gridSize>
@@ -196,17 +208,28 @@ public class IsotheticOCR {
                 tail = (tail - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
                 counter++;
             }
+            this.counter = counter;
+
         }
 
         //if corresponding vertex not found
         if(found == 0){
             LOGGER.warning("Tail vertex corresponding to the head vertex not found in : " + pgmImage.sourcePgmFile.getName());
             //set symmetricity = 0, i.e. not symmetric
-            pgmImage.verticalSymmetricity = 0;
+            pgmImage.verticalAsymmetryProbability = (counter * 1.0) / (pgmImage.isotheticVertices.size() * 1.0);
+            pgmImage.verticalSymmetryProbability = 1 - pgmImage.verticalAsymmetryProbability;
+            if (pgmImage.verticalSymmetryProbability > pgmImage.verticalAsymmetryProbability)
+                pgmImage.verticalSymmetry = 1;
+            else
+                pgmImage.verticalSymmetry = 0;
         }
 
-        //if corresponding vertex found
+        //if corresponding tail vertex found
         else {
+
+            pgmImage.verticalAsymmetryProbability = 1;
+            pgmImage.verticalSymmetryProbability = 0;
+
             LOGGER.info("Tail vertex corresponding to the head vertex found in : " + pgmImage.sourcePgmFile.getName());
             //needed to save the initial TailVertex to match the ending of traversal
             Vertex tailVertex = pgmImage.isotheticVertices.get(tail);
@@ -226,8 +249,8 @@ public class IsotheticOCR {
 
             //variable to keep track of consecutive skips
             skipStreak = 0;
-            pgmImage.maxSkipStreak = 0;
-            int breakLoop = 0;
+            pgmImage.verticalMaxSkipStreak = 0;
+//            int breakLoop = 0;
 
             headMoved = 0;
             tailMoved = 0;
@@ -269,73 +292,89 @@ public class IsotheticOCR {
                     //if currentTailVertex is corresponding to currentHeadVertex
                     if (currentTailJDifference >= currentHeadJDifference - jGridErrorVertical * gridSize && currentTailJDifference <= currentHeadJDifference + jGridErrorVertical * gridSize && currentHeadVertex.angle == currentTailVertex.angle) {
                         accept();
+                        pgmImage.verticalSymmetry = 1;
                     }
                     else {
                         if (headJDistance > tailJDistance){
-                            breakLoop = skipTail();
+                            skipTail();
+                            /*breakLoop = skipTail();
                             if (breakLoop == 1){
-                                pgmImage.verticalSymmetricity = 0;
+                                pgmImage.verticalSymmetry = 0;
                                 break;
-                            }
+                            }*/
                         }
                         else if (tailJDistance > headJDistance){
-                            breakLoop = skipHead();
+                            skipHead();
+                            /*breakLoop = skipHead();
                             if (breakLoop == 1){
-                                pgmImage.verticalSymmetricity = 0;
+                                pgmImage.verticalSymmetry = 0;
                                 break;
-                            }
+                            }*/
                         }
                         else {
                             skipHeadAndTail();
+                            /*breakLoop = skipHeadAndTail();
                             if (breakLoop == 1){
-                                pgmImage.verticalSymmetricity = 0;
+                                pgmImage.verticalSymmetry = 0;
                                 break;
-                            }
+                            }*/
                         }
                     }
                 }
 
                 else {
                     if (headIDistance > tailIDistance){
-                        breakLoop = skipTail();
+                        skipTail();
+                        /*breakLoop = skipTail();
                         if (breakLoop == 1){
-                            pgmImage.verticalSymmetricity = 0;
+                            pgmImage.verticalSymmetry = 0;
                             break;
-                        }
+                        }*/
                     }
                     else if (headIDistance < tailIDistance){
-                        breakLoop = skipHead();
+                        skipHead();
+                        /*breakLoop = skipHead();
                         if (breakLoop == 1){
-                            pgmImage.verticalSymmetricity = 0;
+                            pgmImage.verticalSymmetry = 0;
                             break;
-                        }
+                        }*/
                     }
 
                     else {
                         if (headJDistance > tailJDistance){
-                            breakLoop = skipTail();
+                            skipTail();
+                            /*breakLoop = skipTail();
                             if (breakLoop == 1){
-                                pgmImage.verticalSymmetricity = 0;
+                                pgmImage.verticalSymmetry = 0;
                                 break;
-                            }
+                            }*/
                         }
                         else if (headJDistance < tailJDistance){
-                            breakLoop = skipHead();
+                            skipHead();
+                            /*breakLoop = skipHead();
                             if (breakLoop == 1){
-                                pgmImage.verticalSymmetricity = 0;
+                                pgmImage.verticalSymmetry = 0;
                                 break;
-                            }
+                            }*/
                         }
                         else {
                             skipHeadAndTail();
+                            /*breakLoop = skipHeadAndTail();
                             if (breakLoop == 1){
-                                pgmImage.verticalSymmetricity = 0;
+                                pgmImage.verticalSymmetry = 0;
                                 break;
-                            }
+                            }*/
                         }
                     }
                 }
             }while (counter < pgmImage.isotheticVertices.size() && currentHeadVertex != headVertex && currentTailVertex != tailVertex);
+
+            pgmImage.verticalAsymmetryProbability = (((pgmImage.verticalTotalHeadSkip + pgmImage.verticalTotalTailSkip)) * 1.0) / (pgmImage.isotheticVertices.size() * 1.0);
+            pgmImage.verticalSymmetryProbability = 1 - pgmImage.verticalAsymmetryProbability;
+            if (pgmImage.verticalSymmetryProbability > pgmImage.verticalAsymmetryProbability)
+                pgmImage.verticalSymmetry = 1;
+            else
+                pgmImage.verticalSymmetry = 0;
         }
     }
 
@@ -343,7 +382,6 @@ public class IsotheticOCR {
         System.out.println("almost same i distance");
         skipStreak = 0;
         System.out.println("accepted");
-        pgmImage.horizontalSymmetricity = 1;
         head = (head + 1) % pgmImage.isotheticVertices.size();
         tail = (tail - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
         headMoved = 1;
@@ -355,7 +393,7 @@ public class IsotheticOCR {
         counter++;
     }
 
-    private int skipHead(){
+    private void skipHead(){
         System.out.println("skipping : " + currentHeadVertex.i + "," + currentHeadVertex.j + "," + currentHeadVertex.angle);
         prevHeadVertex = currentHeadVertex;
         head = (head + 1) % pgmImage.isotheticVertices.size();
@@ -363,18 +401,29 @@ public class IsotheticOCR {
         tailMoved = 0;
         currentHeadVertex = pgmImage.isotheticVertices.get(head);
 //        updateHeadDirection(currentHeadVertex, prevHeadVertex);
-        skipStreak++;
-        //increase counter twice  here, because we are skipping the vertices
         counter++;
-        pgmImage.totalHeadSkip++;
-        if (skipStreak > vertexSkipThreshold) {
-            pgmImage.maxSkipStreak = skipStreak;
-            return 1;
+        skipStreak++;
+        if (currentCheck == 1){
+            pgmImage.verticalTotalHeadSkip++;
+            if (skipStreak > pgmImage.verticalMaxSkipStreak){
+                pgmImage.verticalMaxSkipStreak = skipStreak;
+            }
         }
-        return 0;
+        else {
+            pgmImage.horizontalTotalHeadSkip++;
+            if (skipStreak > pgmImage.horizontalMaxSkipStreak){
+                pgmImage.horizontalMaxSkipStreak = skipStreak;
+            }
+
+        }
+        //increase counter twice  here, because we are skipping the vertices
+        /*if (skipStreak > vertexSkipThreshold) {
+            return 1;
+        }*/
+//        return 0;
     }
 
-    private int skipTail(){
+    private void skipTail(){
         System.out.println("skipping : " + currentTailVertex.i + "," + currentTailVertex.j + "," + currentTailVertex.angle);
         tail = (tail - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
         headMoved = 0;
@@ -383,15 +432,25 @@ public class IsotheticOCR {
         currentTailVertex = pgmImage.isotheticVertices.get(tail);
 //        updateTailDirection(currentTailVertex, prevTailVertex);
         skipStreak++;
-        pgmImage.totalTailSkip++;
-        if (skipStreak > vertexSkipThreshold) {
-            pgmImage.maxSkipStreak = skipStreak;
-            return 1;
+        if (currentCheck == 1){
+            pgmImage.verticalTotalTailSkip++;
+            if (skipStreak > pgmImage.verticalMaxSkipStreak){
+                pgmImage.verticalMaxSkipStreak = skipStreak;
+            }
         }
-        return 0;
+        else {
+            pgmImage.horizontalTotalTailSkip++;
+            if (skipStreak > pgmImage.horizontalMaxSkipStreak){
+                pgmImage.horizontalMaxSkipStreak = skipStreak;
+            }
+        }
+        /*if (skipStreak > vertexSkipThreshold) {
+            return 1;
+        }*/
+//        return 0;
     }
 
-    private int skipHeadAndTail(){
+    private void skipHeadAndTail(){
         System.out.println("skipping : " + currentHeadVertex.i + "," + currentHeadVertex.j + "," + currentHeadVertex.angle + " and " + currentTailVertex.i + "," + currentTailVertex.j + "," + currentTailVertex.angle);
         head = (head + 1) % pgmImage.isotheticVertices.size();
         tail = (tail - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
@@ -405,16 +464,28 @@ public class IsotheticOCR {
 //        updateTailDirection(currentTailVertex, prevTailVertex);
         counter++;
         skipStreak++;
-        pgmImage.totalHeadSkip++;
-        pgmImage.totalTailSkip++;
-        if (skipStreak > vertexSkipThreshold) {
-            pgmImage.maxSkipStreak = skipStreak;
-            return 1;
+        if (currentCheck == 1){
+            pgmImage.verticalTotalHeadSkip++;
+            pgmImage.verticalTotalTailSkip++;
+            if (skipStreak > pgmImage.verticalMaxSkipStreak){
+                pgmImage.verticalMaxSkipStreak = skipStreak;
+            }
         }
-        return 0;
+        else {
+            pgmImage.horizontalTotalHeadSkip++;
+            pgmImage.horizontalTotalTailSkip++;
+            if (skipStreak > pgmImage.horizontalMaxSkipStreak){
+                pgmImage.horizontalMaxSkipStreak = skipStreak;
+            }
+        }
+        /*if (skipStreak > vertexSkipThreshold) {
+            return 1;
+        }*/
+//        return 0;
     }
 
     void horizontalSymmetry(PgmImage pgmImage, Properties properties, Logger LOGGER){
+        currentCheck = 0;
 
         this.pgmImage = pgmImage;
 
@@ -466,6 +537,8 @@ public class IsotheticOCR {
                 tail = (tail - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
                 counter++;
             }
+
+            this.counter = counter;
         }
 
         //if mirror of head not found then look for <i, mid + d - gridSize>
@@ -490,6 +563,8 @@ public class IsotheticOCR {
                 tail = (tail - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
                 counter++;
             }
+
+            this.counter = counter;
         }
 
         //if still not found then look for <i, mid + d + gridSize>
@@ -513,6 +588,8 @@ public class IsotheticOCR {
                 tail = (tail - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
                 counter++;
             }
+
+            this.counter = counter;
 
         }
 
@@ -538,6 +615,8 @@ public class IsotheticOCR {
                 tail = (tail - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
                 counter++;
             }
+
+            this.counter = counter;
         }
 
         //if still not found then look for <i - 1, mid + d - gridSize>
@@ -562,6 +641,7 @@ public class IsotheticOCR {
                 tail = (tail - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
                 counter++;
             }
+            this.counter = counter;
         }
 
         //if still not found then look for <i - 1, mid + d + gridSize>
@@ -586,17 +666,25 @@ public class IsotheticOCR {
                 tail = (tail - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
                 counter++;
             }
+            this.counter = counter;
         }
 
         //if corresponding vertex not found
         if(found == 0){
             LOGGER.warning("Tail vertex corresponding to the head vertex not found in : " + pgmImage.sourcePgmFile.getName());
             //set symmetricity = 0, i.e. not symmetric
-            pgmImage.horizontalSymmetricity = 0;
+            pgmImage.horizontalAsymmetryProbability = (counter * 1.0) / (pgmImage.isotheticVertices.size() * 1.0);
+            pgmImage.horizontalSymmetryProbability = 1 - pgmImage.horizontalAsymmetryProbability;
+            if (pgmImage.horizontalSymmetryProbability > pgmImage.horizontalAsymmetryProbability)
+                pgmImage.horizontalSymmetry = 1;
+            else
+                pgmImage.horizontalSymmetry = 0;
         }
 
         //if corresponding vertex found
         else {
+            pgmImage.horizontalAsymmetryProbability = 1;
+            pgmImage.horizontalSymmetryProbability = 0;
             LOGGER.info("Tail vertex corresponding to the head vertex found in : " + pgmImage.sourcePgmFile.getName());
             Vertex tailVertex = pgmImage.isotheticVertices.get(tail);
             currentHeadVertex = pgmImage.isotheticVertices.get(head); //vertex object at the head pointer
@@ -653,72 +741,85 @@ public class IsotheticOCR {
                     //if currentTailVertex is corresponding to currentHeadVertex
                     if (currentTailIDifference >= currentHeadIDifference - iGridErrorHorizontal * gridSize && currentTailIDifference <= currentHeadIDifference + iGridErrorHorizontal * gridSize && currentHeadVertex.angle == currentTailVertex.angle) {
                         accept();
+                        pgmImage.horizontalSymmetry = 1;
                     }
                     else {
                         if (headIDistance > tailIDistance){
-                            breakLoop = skipTail();
-                            if (breakLoop == 1){
-                                pgmImage.horizontalSymmetricity = 0;
+                            skipTail();
+//                            breakLoop = skipTail();
+                            /*if (breakLoop == 1){
+                                pgmImage.horizontalSymmetry = 0;
                                 break;
-                            }
+                            }*/
                         }
                         else if (tailIDistance > headIDistance){
-                            breakLoop = skipHead();
+                            skipHead();
+                            /*breakLoop = skipHead();
                             if (breakLoop == 1){
-                                pgmImage.horizontalSymmetricity = 0;
+                                pgmImage.horizontalSymmetry = 0;
                                 break;
-                            }
+                            }*/
                         }
                         else {
                             skipHeadAndTail();
+                            /*breakLoop = skipHeadAndTail();
                             if (breakLoop == 1){
-                                pgmImage.horizontalSymmetricity = 0;
+                                pgmImage.horizontalSymmetry = 0;
                                 break;
-                            }
+                            }*/
                         }
                     }
                 }
                 else {
                     System.out.println("i distance not almost same");
                     if (headJDistance > tailJDistance){
-                        breakLoop = skipTail();
+                        skipTail();
+                        /*breakLoop = skipTail();
                         if (breakLoop == 1){
-                            pgmImage.horizontalSymmetricity = 0;
+                            pgmImage.horizontalSymmetry = 0;
                             break;
-                        }
+                        }*/
                     }
                     else if (headJDistance < tailJDistance){
-                        breakLoop = skipHead();
+                        skipHead();
+                        /*breakLoop = skipHead();
                         if (breakLoop == 1){
-                            pgmImage.horizontalSymmetricity = 0;
+                            pgmImage.horizontalSymmetry = 0;
                             break;
-                        }
+                        }*/
                     }
                     else {
                         if (headIDistance > tailIDistance){
-                            breakLoop = skipTail();
+                            skipTail();
+                            /*breakLoop = skipTail();
                             if (breakLoop == 1){
-                                pgmImage.horizontalSymmetricity = 0;
+                                pgmImage.horizontalSymmetry = 0;
                                 break;
-                            }
+                            }*/
                         }
                         else if (headIDistance < tailIDistance){
-                            breakLoop = skipHead();
-                            if (breakLoop == 1){
-                                pgmImage.horizontalSymmetricity = 0;
+                            skipHead();
+                            /*if (breakLoop == 1){
+                                pgmImage.horizontalSymmetry = 0;
                                 break;
-                            }
+                            }*/
                         }
                         else {
                             skipHeadAndTail();
-                            if (breakLoop == 1){
-                                pgmImage.horizontalSymmetricity = 0;
+                            /*if (breakLoop == 1){
+                                pgmImage.horizontalSymmetry = 0;
                                 break;
-                            }
+                            }*/
                         }
                     }
                 }
             }while (counter < pgmImage.isotheticVertices.size() && currentHeadVertex != headVertex && currentTailVertex != tailVertex);
+            pgmImage.horizontalAsymmetryProbability = (((pgmImage.horizontalTotalHeadSkip+ pgmImage.horizontalTotalTailSkip)) * 1.0) / (pgmImage.isotheticVertices.size() * 1.0);
+            pgmImage.horizontalSymmetryProbability = 1 - pgmImage.horizontalAsymmetryProbability;
+            if (pgmImage.horizontalSymmetryProbability > pgmImage.horizontalAsymmetryProbability)
+                pgmImage.horizontalSymmetry = 1;
+            else
+                pgmImage.horizontalSymmetry = 0;
         }
     }
 

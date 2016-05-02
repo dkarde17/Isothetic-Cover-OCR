@@ -1,38 +1,51 @@
-import java.util.Iterator;
 import java.util.Properties;
 import java.util.logging.Logger;
 
 /**
  * Created by CNOVA on 4/16/2016.
  */
-public class IsotheticOCRold {
+public class IsotheticOCROld {
 
-    private int headIDirection;
-    private int tailIDirection;
-    private int headJDirection;
-    private int tailJDirection;
+    //variable to begin the symmetry match, first element of top most row in isothetic cover
+    private int head;
+    //variable to traverse in reverse direction to find the corresponding element to head
+    private int tail;
+    private Vertex currentHeadVertex; //vertex object at the head pointer
+    private Vertex currentTailVertex; //vertex object at the tail pointer
+    private Vertex prevTailVertex; //previous tail vertex
+    private Vertex prevHeadVertex;
+    //variable to keep track of consecutive skips
+    private int skipStreak;
+    private int headMoved = 0;
+    private int tailMoved = 0;
+    //counter to run the loop exactly the number of times equal to the number of vertices in the isothetic vertices list
+    private int counter = 0;
+    //variable to keep track of vertices to skip before deciding asymmetry
+    private int vertexSkipThreshold;
+
+    private PgmImage pgmImage;
 
     //method to check vertical symmetry
     void verticalSymmetry(PgmImage pgmImage, Properties properties, Logger LOGGER){
+
+        this.pgmImage = pgmImage;
 
         int gridSize = Integer.parseInt(properties.getProperty("gridSize"));
         int mid = pgmImage.imgWidth/2; //mirror line
 
         //variable to keep track of vertices to skip before deciding asymmetry
-        int vertexSkipThreshold = Integer.parseInt(properties.getProperty("vertexSkipThresholdVertical"));
+        vertexSkipThreshold = Integer.parseInt(properties.getProperty("vertexSkipThresholdVertical"));
 
         //variable to store the number of grid lines allowed to look for to find a vertex corresponding to the other vertex
         int iGridErrorVertical = Integer.parseInt(properties.getProperty("iGridErrorVertical"));
         int jGridErrorVertical = Integer.parseInt(properties.getProperty("jGridErrorVertical"));
 
-        //variable to keep track of consecutive skips
-        int skipStreak = 0;
 
         //variable to begin the symmetry match, first element of top most row in isothetic cover
-        int head = pgmImage.isotheticVertices.indexOf(pgmImage.iSorted2DList.get(0).get(0));
+        head = pgmImage.isotheticVertices.indexOf(pgmImage.iSorted2DList.get(0).get(0));
 
         //variable to traverse in reverse direction to find the corresponding element to head
-        int tail = (head - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
+        tail = (head - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
 
         //flag to know if the tail vertex corresponding to starting Head vertex has been found or not
         int found = 0;
@@ -189,20 +202,21 @@ public class IsotheticOCRold {
         if(found == 0){
             LOGGER.warning("Tail vertex corresponding to the head vertex not found in : " + pgmImage.sourcePgmFile.getName());
             //set symmetricity = 0, i.e. not symmetric
-            pgmImage.verticalSymmetricity = 0;
+            pgmImage.verticalSymmetry = 0;
         }
 
-        //if corresponding vertex found
+        //if corresponding tail vertex found
         else {
             LOGGER.info("Tail vertex corresponding to the head vertex found in : " + pgmImage.sourcePgmFile.getName());
+            //needed to save the initial TailVertex to match the ending of traversal
             Vertex tailVertex = pgmImage.isotheticVertices.get(tail);
-            Vertex currentHeadVertex = pgmImage.isotheticVertices.get(head); //vertex object at the head pointer
-            Vertex currentTailVertex = pgmImage.isotheticVertices.get(tail); //vertex object at the tail pointer
-            Vertex prevHeadVertex = currentHeadVertex; //previous head vertex
-            Vertex prevTailVertex = currentTailVertex; //previous tail vertex
+            currentHeadVertex = pgmImage.isotheticVertices.get(head); //vertex object at the head pointer
+            currentTailVertex = pgmImage.isotheticVertices.get(tail); //vertex object at the tail pointer
+            prevHeadVertex = currentHeadVertex; //previous head vertex
+            prevTailVertex = currentTailVertex; //previous tail vertex
 
-            int currentHeadJDifference = 0; //to stopre the difference of j between current head vertex and mid
-            int currentTailJDifference = 0; //to stopre the difference of j between current tail vertex and mid
+            int currentHeadJDifference; //to stopre the difference of j between current head vertex and mid
+            int currentTailJDifference; //to stopre the difference of j between current tail vertex and mid
 
             //to keep track of who is leading
             int headIDistance = 0;
@@ -210,16 +224,16 @@ public class IsotheticOCRold {
             int tailIDistance = 0;
             int tailJDistance = 0;
 
-            headIDirection = 0;
-            tailIDirection = 0;
-            headJDirection = 1;//doesn't matter
-            tailJDirection = 0;//doesn't matter
+            //variable to keep track of consecutive skips
+            skipStreak = 0;
+//            pgmImage.maxSkipStreak = 0;
+            int breakLoop = 0;
 
-            int headMoved = 0;
-            int tailMoved = 0;
+            headMoved = 0;
+            tailMoved = 0;
 
             //counter to run the loop exactly the number of times equal to the number of vertices in the isothetic vertices list
-            int counter = 0;
+            counter = 0;
 
             LOGGER.info("Traversing the cover to check for the symmetry of : " + pgmImage.sourcePgmFile.getName());
             do{
@@ -253,115 +267,29 @@ public class IsotheticOCRold {
                     currentTailJDifference = currentTailVertex.j - mid;
 
                     //if currentTailVertex is corresponding to currentHeadVertex
-                    if (currentTailJDifference >= currentHeadJDifference - jGridErrorVertical * gridSize && currentTailJDifference <= currentHeadJDifference + jGridErrorVertical * gridSize) {
-                        System.out.println("almost same j distance");
-                        if (currentHeadVertex.angle == currentTailVertex.angle) {
-                            skipStreak = 0;
-                            System.out.println("accepted");
-                            pgmImage.verticalSymmetricity = 1;
-                            head = (head + 1) % pgmImage.isotheticVertices.size();
-                            tail = (tail - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
-                            headMoved = 1;
-                            tailMoved = 1;
-                            prevHeadVertex = currentHeadVertex;
-                            currentHeadVertex = pgmImage.isotheticVertices.get(head);
-                            prevTailVertex = currentTailVertex;
-                            currentTailVertex = pgmImage.isotheticVertices.get(tail);
-
-                            updateHeadDirection(currentHeadVertex, prevHeadVertex);
-                            updateTailDirection(currentTailVertex, prevTailVertex);
-
-                            counter++;
-                        }
-                        else {
-                            if (headJDistance > tailJDistance){
-                                System.out.println("skipping : " + currentTailVertex.i + "," + currentTailVertex.j + "," + currentTailVertex.angle);
-                                tail = (tail - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
-                                headMoved = 0;
-                                tailMoved = 1;
-                                prevTailVertex = currentTailVertex;
-                                currentTailVertex = pgmImage.isotheticVertices.get(tail);
-                                updateTailDirection(currentTailVertex, prevTailVertex);
-                                skipStreak++;
-                                pgmImage.totalTailSkip++;
-                                if (skipStreak > vertexSkipThreshold) {
-                                    pgmImage.verticalSymmetricity = 0;
-                                    break;
-                                }
-                            }
-                            else if (tailJDistance > headJDistance){
-                                System.out.println("skipping : " + currentHeadVertex.i + "," + currentHeadVertex.j + "," + currentHeadVertex.angle);
-                                prevHeadVertex = currentHeadVertex;
-                                head = (head + 1) % pgmImage.isotheticVertices.size();
-                                headMoved = 1;
-                                tailMoved = 0;
-                                currentHeadVertex = pgmImage.isotheticVertices.get(head);
-                                updateHeadDirection(currentHeadVertex, prevHeadVertex);
-                                skipStreak++;
-                                //increase counter twice  here, because we are skipping the vertices
-                                counter++;
-                                pgmImage.totalHeadSkip++;
-                                if (skipStreak > vertexSkipThreshold) {
-                                    pgmImage.verticalSymmetricity = 0;
-                                    break;
-                                }
-                            }
-                            else {
-                                System.out.println("skipping : " + currentHeadVertex.i + "," + currentHeadVertex.j + "," + currentHeadVertex.angle + " and " + currentTailVertex.i + "," + currentTailVertex.j + "," + currentTailVertex.angle);
-                                head = (head + 1) % pgmImage.isotheticVertices.size();
-                                tail = (tail - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
-                                headMoved = 1;
-                                tailMoved = 1;
-                                prevHeadVertex = currentHeadVertex;
-                                currentHeadVertex = pgmImage.isotheticVertices.get(head);
-                                prevTailVertex = currentTailVertex;
-                                currentTailVertex = pgmImage.isotheticVertices.get(tail);
-                                updateHeadDirection(currentHeadVertex, prevHeadVertex);
-                                updateTailDirection(currentTailVertex, prevTailVertex);
-                                counter++;
-                                skipStreak++;
-                                pgmImage.totalHeadSkip++;
-                                pgmImage.totalTailSkip++;
-                                if (skipStreak > vertexSkipThreshold) {
-                                    pgmImage.verticalSymmetricity = 0;
-                                    break;
-                                }
-                            }
-                        }
+                    if (currentTailJDifference >= currentHeadJDifference - jGridErrorVertical * gridSize && currentTailJDifference <= currentHeadJDifference + jGridErrorVertical * gridSize && currentHeadVertex.angle == currentTailVertex.angle) {
+                        accept();
+                        pgmImage.verticalSymmetry = 1;
                     }
                     else {
-                        System.out.println("j distance not almost same");
                         if (headJDistance > tailJDistance){
-                            System.out.println("head j distance greater");
-                            System.out.println("skipping : " + currentTailVertex.i + "," + currentTailVertex.j + "," + currentTailVertex.angle);
-                            tail = (tail - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
-                            headMoved = 0;
-                            tailMoved = 1;
-                            prevTailVertex = currentTailVertex;
-                            currentTailVertex = pgmImage.isotheticVertices.get(tail);
-                            updateTailDirection(currentTailVertex, prevTailVertex);
-                            skipStreak++;
-                            pgmImage.totalTailSkip++;
-                            if (skipStreak > vertexSkipThreshold) {
-                                pgmImage.verticalSymmetricity = 0;
+                            breakLoop = skipTail();
+                            if (breakLoop == 1){
+                                pgmImage.verticalSymmetry = 0;
+                                break;
+                            }
+                        }
+                        else if (tailJDistance > headJDistance){
+                            breakLoop = skipHead();
+                            if (breakLoop == 1){
+                                pgmImage.verticalSymmetry = 0;
                                 break;
                             }
                         }
                         else {
-                            System.out.println("tail j distance greater");
-                            System.out.println("skipping : " + currentHeadVertex.i + "," + currentHeadVertex.j + "," + currentHeadVertex.angle);
-                            prevHeadVertex = currentHeadVertex;
-                            head = (head + 1) % pgmImage.isotheticVertices.size();
-                            headMoved = 1;
-                            tailMoved = 0;
-                            currentHeadVertex = pgmImage.isotheticVertices.get(head);
-                            updateHeadDirection(currentHeadVertex, prevHeadVertex);
-                            skipStreak++;
-                            //increase counter twice  here, because we are skipping the vertices
-                            counter++;
-                            pgmImage.totalHeadSkip++;
-                            if (skipStreak > vertexSkipThreshold) {
-                                pgmImage.verticalSymmetricity = 0;
+                            breakLoop = skipHeadAndTail();
+                            if (breakLoop == 1){
+                                pgmImage.verticalSymmetry = 0;
                                 break;
                             }
                         }
@@ -369,75 +297,40 @@ public class IsotheticOCRold {
                 }
 
                 else {
-                    System.out.println(headIDirection);
-                    System.out.println(tailIDirection);
-                    if (headIDirection == tailIDirection){
-                        System.out.println("head directions same");
-                        if ((headIDirection == 0 && currentHeadVertex.i > currentTailVertex.i) || (headIDirection == 1 && currentHeadVertex.i < currentTailVertex.i)){
-                            System.out.println("first if");
-                            System.out.println("skipping : " + currentTailVertex.i + "," + currentTailVertex.j + "," + currentTailVertex.angle);
-                            tail = (tail - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
-                            headMoved = 0;
-                            tailMoved = 1;
-                            prevTailVertex = currentTailVertex;
-                            currentTailVertex = pgmImage.isotheticVertices.get(tail);
-                            updateTailDirection(currentTailVertex, prevTailVertex);
-                            skipStreak++;
-                            pgmImage.totalTailSkip++;
-                            if (skipStreak > vertexSkipThreshold) {
-                                pgmImage.verticalSymmetricity = 0;
-                                break;
-                            }
-                        }
-                        else if ((headIDirection == 0 && currentHeadVertex.i < currentTailVertex.i) || (headIDirection == 1 && currentHeadVertex.i > currentTailVertex.i)){
-                            System.out.println("second if");
-                            System.out.println("skipping : " + currentHeadVertex.i + "," + currentHeadVertex.j + "," + currentHeadVertex.angle);
-                            prevHeadVertex = currentHeadVertex;
-                            head = (head + 1) % pgmImage.isotheticVertices.size();
-                            headMoved = 1;
-                            tailMoved = 0;
-                            currentHeadVertex = pgmImage.isotheticVertices.get(head);
-                            updateHeadDirection(currentHeadVertex, prevHeadVertex);
-                            skipStreak++;
-                            //increase counter twice  here, because we are skipping the vertices
-                            counter++;
-                            pgmImage.totalHeadSkip++;
-                            if (skipStreak > vertexSkipThreshold) {
-                                pgmImage.verticalSymmetricity = 0;
-                                break;
-                            }
+                    if (headIDistance > tailIDistance){
+                        breakLoop = skipTail();
+                        if (breakLoop == 1){
+                            pgmImage.verticalSymmetry = 0;
+                            break;
                         }
                     }
+                    else if (headIDistance < tailIDistance){
+                        breakLoop = skipHead();
+                        if (breakLoop == 1){
+                            pgmImage.verticalSymmetry = 0;
+                            break;
+                        }
+                    }
+
                     else {
-                        if (headIDistance > tailIDistance){
-                            System.out.println("skipping : " + currentTailVertex.i + "," + currentTailVertex.j + "," + currentTailVertex.angle);
-                            tail = (tail - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
-                            prevTailVertex = currentTailVertex;
-                            headMoved = 0;
-                            tailMoved = 1;
-                            currentTailVertex = pgmImage.isotheticVertices.get(tail);
-                            updateTailDirection(currentTailVertex, prevTailVertex);
-                            skipStreak++;
-                            pgmImage.totalTailSkip++;
-                            if (skipStreak > vertexSkipThreshold) {
-                                pgmImage.verticalSymmetricity = 0;
+                        if (headJDistance > tailJDistance){
+                            breakLoop = skipTail();
+                            if (breakLoop == 1){
+                                pgmImage.verticalSymmetry = 0;
                                 break;
                             }
                         }
-                        else if (headIDistance < tailIDistance){
-                            System.out.println("skipping : " + currentHeadVertex.i + "," + currentHeadVertex.j + "," + currentHeadVertex.angle);
-                            prevHeadVertex = currentHeadVertex;
-                            head = (head + 1) % pgmImage.isotheticVertices.size();
-                            headMoved = 1;
-                            tailMoved = 0;
-                            currentHeadVertex = pgmImage.isotheticVertices.get(head);
-                            updateHeadDirection(currentHeadVertex, prevHeadVertex);
-                            skipStreak++;
-                            //increase counter twice  here, because we are skipping the vertices
-                            counter++;
-                            pgmImage.totalHeadSkip++;
-                            if (skipStreak > vertexSkipThreshold) {
-                                pgmImage.verticalSymmetricity = 0;
+                        else if (headJDistance < tailJDistance){
+                            breakLoop = skipHead();
+                            if (breakLoop == 1){
+                                pgmImage.verticalSymmetry = 0;
+                                break;
+                            }
+                        }
+                        else {
+                            breakLoop = skipHeadAndTail();
+                            if (breakLoop == 1){
+                                pgmImage.verticalSymmetry = 0;
                                 break;
                             }
                         }
@@ -447,26 +340,108 @@ public class IsotheticOCRold {
         }
     }
 
+    void accept(){
+        System.out.println("almost same i distance");
+        skipStreak = 0;
+        System.out.println("accepted");
+        head = (head + 1) % pgmImage.isotheticVertices.size();
+        tail = (tail - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
+        headMoved = 1;
+        tailMoved = 1;
+        prevHeadVertex = currentHeadVertex;
+        currentHeadVertex = pgmImage.isotheticVertices.get(head);
+        prevTailVertex = currentTailVertex;
+        currentTailVertex = pgmImage.isotheticVertices.get(tail);
+        counter++;
+    }
+
+    private int skipHead(){
+        System.out.println("skipping : " + currentHeadVertex.i + "," + currentHeadVertex.j + "," + currentHeadVertex.angle);
+        prevHeadVertex = currentHeadVertex;
+        head = (head + 1) % pgmImage.isotheticVertices.size();
+        headMoved = 1;
+        tailMoved = 0;
+        currentHeadVertex = pgmImage.isotheticVertices.get(head);
+//        updateHeadDirection(currentHeadVertex, prevHeadVertex);
+        counter++;
+//        pgmImage.totalHeadSkip++;
+        skipStreak++;
+        //increase counter twice  here, because we are skipping the vertices
+//        if (skipStreak > pgmImage.maxSkipStreak){
+//            pgmImage.maxSkipStreak = skipStreak;
+//        }
+        if (skipStreak > vertexSkipThreshold) {
+            return 1;
+        }
+        return 0;
+    }
+
+    private int skipTail(){
+        System.out.println("skipping : " + currentTailVertex.i + "," + currentTailVertex.j + "," + currentTailVertex.angle);
+        tail = (tail - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
+        headMoved = 0;
+        tailMoved = 1;
+        prevTailVertex = currentTailVertex;
+        currentTailVertex = pgmImage.isotheticVertices.get(tail);
+//        updateTailDirection(currentTailVertex, prevTailVertex);
+//        pgmImage.totalTailSkip++;
+        skipStreak++;
+//        if (skipStreak > pgmImage.maxSkipStreak){
+//            pgmImage.maxSkipStreak = skipStreak;
+//        }
+        if (skipStreak > vertexSkipThreshold) {
+            return 1;
+        }
+        return 0;
+    }
+
+    private int skipHeadAndTail(){
+        System.out.println("skipping : " + currentHeadVertex.i + "," + currentHeadVertex.j + "," + currentHeadVertex.angle + " and " + currentTailVertex.i + "," + currentTailVertex.j + "," + currentTailVertex.angle);
+        head = (head + 1) % pgmImage.isotheticVertices.size();
+        tail = (tail - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
+        headMoved = 1;
+        tailMoved = 1;
+        prevHeadVertex = currentHeadVertex;
+        currentHeadVertex = pgmImage.isotheticVertices.get(head);
+        prevTailVertex = currentTailVertex;
+        currentTailVertex = pgmImage.isotheticVertices.get(tail);
+//        updateHeadDirection(currentHeadVertex, prevHeadVertex);
+//        updateTailDirection(currentTailVertex, prevTailVertex);
+        counter++;
+//        pgmImage.totalHeadSkip++;
+//        pgmImage.totalTailSkip++;
+        skipStreak++;
+//        if (skipStreak > pgmImage.maxSkipStreak){
+//            pgmImage.maxSkipStreak = skipStreak;
+//        }
+        if (skipStreak > vertexSkipThreshold) {
+            return 1;
+        }
+        return 0;
+    }
+
     void horizontalSymmetry(PgmImage pgmImage, Properties properties, Logger LOGGER){
+
+        this.pgmImage = pgmImage;
 
         int gridSize = Integer.parseInt(properties.getProperty("gridSize"));
         int mid = pgmImage.imgHeight/2; //mirror line
 
         //variable to keep track of vertices to skip before deciding asymmetry
-        int vertexSkipThreshold = Integer.parseInt(properties.getProperty("vertexSkipThresholdHorizontal"));
+        vertexSkipThreshold = Integer.parseInt(properties.getProperty("vertexSkipThresholdHorizontal"));
 
         //variable to store the number of grid lines allowed to look for to find a vertex corresponding to the other vertex
         int iGridErrorHorizontal = Integer.parseInt(properties.getProperty("iGridErrorHorizontal"));
         int jGridErrorHorizontal = Integer.parseInt(properties.getProperty("jGridErrorHorizontal"));
 
         //variable to keep track of consecutive skips
-        int skipStreak = 0;
+        skipStreak = 0;
 
         //variable to begin the symmetry match, first element of top most row in isothetic cover
-        int head = pgmImage.isotheticVertices.indexOf(pgmImage.jSorted2DList.get(0).get(pgmImage.jSorted2DList.get(0).size() - 1));
+        head = pgmImage.isotheticVertices.indexOf(pgmImage.jSorted2DList.get(0).get(pgmImage.jSorted2DList.get(0).size() - 1));
 
         //variable to traverse in reverse direction to find the corresponding element to head
-        int tail = (head - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
+        tail = (head - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
 
         //flag to know if the tail vertex corresponding to starting Head vertex has been found or not
         int found = 0;
@@ -623,20 +598,20 @@ public class IsotheticOCRold {
         if(found == 0){
             LOGGER.warning("Tail vertex corresponding to the head vertex not found in : " + pgmImage.sourcePgmFile.getName());
             //set symmetricity = 0, i.e. not symmetric
-            pgmImage.horizontalSymmetricity = 0;
+            pgmImage.horizontalSymmetry = 0;
         }
 
         //if corresponding vertex found
         else {
             LOGGER.info("Tail vertex corresponding to the head vertex found in : " + pgmImage.sourcePgmFile.getName());
             Vertex tailVertex = pgmImage.isotheticVertices.get(tail);
-            Vertex currentHeadVertex = pgmImage.isotheticVertices.get(head); //vertex object at the head pointer
-            Vertex currentTailVertex = pgmImage.isotheticVertices.get(tail); //vertex object at the tail pointer
-            Vertex prevHeadVertex = currentHeadVertex; //previous head vertex
-            Vertex prevTailVertex = currentTailVertex; //previous tail vertex
+            currentHeadVertex = pgmImage.isotheticVertices.get(head); //vertex object at the head pointer
+            currentTailVertex = pgmImage.isotheticVertices.get(tail); //vertex object at the tail pointer
+            prevHeadVertex = currentHeadVertex; //previous head vertex
+            prevTailVertex = currentTailVertex; //previous tail vertex
 
-            int currentHeadIDifference = 0; //to stopre the difference of j between current head vertex and mid
-            int currentTailIDifference = 0; //to stopre the difference of j between current tail vertex and mid
+            int currentHeadIDifference; //to stopre the difference of j between current head vertex and mid
+            int currentTailIDifference; //to stopre the difference of j between current tail vertex and mid
 
             //to keep track of who is leading
             int headIDistance = 0;
@@ -644,16 +619,12 @@ public class IsotheticOCRold {
             int tailIDistance = 0;
             int tailJDistance = 0;
 
-            headIDirection = 1;//doesn't matter
-            tailIDirection = 0;//doesn't matter
-            headJDirection = 0;
-            tailJDirection = 0;
-
-            int headMoved = 0;
-            int tailMoved = 0;
+            int breakLoop = 0;
+            headMoved = 0;
+            tailMoved = 0;
 
             //counter to run the loop exactly the number of times equal to the number of vertices in the isothetic vertices list
-            int counter = 0;
+            counter = 0;
 
             LOGGER.info("Traversing the cover to check for the symmetry of : " + pgmImage.sourcePgmFile.getName());
             do{
@@ -686,191 +657,69 @@ public class IsotheticOCRold {
                     currentTailIDifference = mid - currentTailVertex.i;
 
                     //if currentTailVertex is corresponding to currentHeadVertex
-                    if (currentTailIDifference >= currentHeadIDifference - iGridErrorHorizontal * gridSize && currentTailIDifference <= currentHeadIDifference + iGridErrorHorizontal * gridSize) {
-                        System.out.println("almost same i distance");
-                        if (currentHeadVertex.angle == currentTailVertex.angle) {
-                            skipStreak = 0;
-                            System.out.println("accepted");
-                            pgmImage.horizontalSymmetricity = 1;
-                            head = (head + 1) % pgmImage.isotheticVertices.size();
-                            tail = (tail - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
-                            headMoved = 1;
-                            tailMoved = 1;
-                            prevHeadVertex = currentHeadVertex;
-                            currentHeadVertex = pgmImage.isotheticVertices.get(head);
-                            prevTailVertex = currentTailVertex;
-                            currentTailVertex = pgmImage.isotheticVertices.get(tail);
-
-                            updateHeadDirection(currentHeadVertex, prevHeadVertex);
-                            updateTailDirection(currentTailVertex, prevTailVertex);
-
-                            counter++;
-                        }
-                        else {
-                            if (headIDistance > tailIDistance){
-                                System.out.println("skipping : " + currentTailVertex.i + "," + currentTailVertex.j + "," + currentTailVertex.angle);
-                                tail = (tail - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
-                                headMoved = 0;
-                                tailMoved = 1;
-                                prevTailVertex = currentTailVertex;
-                                currentTailVertex = pgmImage.isotheticVertices.get(tail);
-                                updateTailDirection(currentTailVertex, prevTailVertex);
-                                skipStreak++;
-                                pgmImage.totalTailSkip++;
-                                if (skipStreak > vertexSkipThreshold) {
-                                    pgmImage.horizontalSymmetricity = 0;
-                                    break;
-                                }
-                            }
-                            else if (tailIDistance > headIDistance){
-                                System.out.println("skipping : " + currentHeadVertex.i + "," + currentHeadVertex.j + "," + currentHeadVertex.angle);
-                                prevHeadVertex = currentHeadVertex;
-                                head = (head + 1) % pgmImage.isotheticVertices.size();
-                                headMoved = 1;
-                                tailMoved = 0;
-                                currentHeadVertex = pgmImage.isotheticVertices.get(head);
-                                updateHeadDirection(currentHeadVertex, prevHeadVertex);
-                                skipStreak++;
-                                //increase counter twice  here, because we are skipping the vertices
-                                counter++;
-                                pgmImage.totalHeadSkip++;
-                                if (skipStreak > vertexSkipThreshold) {
-                                    pgmImage.horizontalSymmetricity = 0;
-                                    break;
-                                }
-                            }
-                            else {
-                                System.out.println("skipping : " + currentHeadVertex.i + "," + currentHeadVertex.j + "," + currentHeadVertex.angle + " and " + currentTailVertex.i + "," + currentTailVertex.j + "," + currentTailVertex.angle);
-                                head = (head + 1) % pgmImage.isotheticVertices.size();
-                                tail = (tail - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
-                                headMoved = 1;
-                                tailMoved = 1;
-                                prevHeadVertex = currentHeadVertex;
-                                currentHeadVertex = pgmImage.isotheticVertices.get(head);
-                                prevTailVertex = currentTailVertex;
-                                currentTailVertex = pgmImage.isotheticVertices.get(tail);
-                                updateHeadDirection(currentHeadVertex, prevHeadVertex);
-                                updateTailDirection(currentTailVertex, prevTailVertex);
-                                counter++;
-                                skipStreak++;
-                                pgmImage.totalHeadSkip++;
-                                pgmImage.totalTailSkip++;
-                                if (skipStreak > vertexSkipThreshold) {
-                                    pgmImage.horizontalSymmetricity = 0;
-                                    break;
-                                }
-                            }
-                        }
+                    if (currentTailIDifference >= currentHeadIDifference - iGridErrorHorizontal * gridSize && currentTailIDifference <= currentHeadIDifference + iGridErrorHorizontal * gridSize && currentHeadVertex.angle == currentTailVertex.angle) {
+                        accept();
+                        pgmImage.horizontalSymmetry = 1;
                     }
                     else {
-                        System.out.println("i distance not almost same");
                         if (headIDistance > tailIDistance){
-                            System.out.println("head i distance greater");
-                            System.out.println("skipping : " + currentTailVertex.i + "," + currentTailVertex.j + "," + currentTailVertex.angle);
-                            tail = (tail - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
-                            headMoved = 0;
-                            tailMoved = 1;
-                            prevTailVertex = currentTailVertex;
-                            currentTailVertex = pgmImage.isotheticVertices.get(tail);
-                            updateTailDirection(currentTailVertex, prevTailVertex);
-                            skipStreak++;
-                            pgmImage.totalTailSkip++;
-                            if (skipStreak > vertexSkipThreshold) {
-                                pgmImage.horizontalSymmetricity = 0;
+                            breakLoop = skipTail();
+                            if (breakLoop == 1){
+                                pgmImage.horizontalSymmetry = 0;
+                                break;
+                            }
+                        }
+                        else if (tailIDistance > headIDistance){
+                            breakLoop = skipHead();
+                            if (breakLoop == 1){
+                                pgmImage.horizontalSymmetry = 0;
                                 break;
                             }
                         }
                         else {
-                            System.out.println("tail i distance greater");
-                            System.out.println("skipping : " + currentHeadVertex.i + "," + currentHeadVertex.j + "," + currentHeadVertex.angle);
-                            prevHeadVertex = currentHeadVertex;
-                            head = (head + 1) % pgmImage.isotheticVertices.size();
-                            headMoved = 1;
-                            tailMoved = 0;
-                            currentHeadVertex = pgmImage.isotheticVertices.get(head);
-                            updateHeadDirection(currentHeadVertex, prevHeadVertex);
-                            skipStreak++;
-                            //increase counter twice  here, because we are skipping the vertices
-                            counter++;
-                            pgmImage.totalHeadSkip++;
-                            if (skipStreak > vertexSkipThreshold) {
-                                pgmImage.horizontalSymmetricity = 0;
+                            breakLoop = skipHeadAndTail();
+                            if (breakLoop == 1){
+                                pgmImage.horizontalSymmetry = 0;
                                 break;
                             }
                         }
                     }
                 }
-
                 else {
-                    System.out.println(headJDirection);
-                    System.out.println(tailJDirection);
-                    if (headJDirection == tailJDirection){
-                        System.out.println("head directions same");
-                        if ((headJDirection == 0 && currentHeadVertex.j > currentTailVertex.j) || (headJDirection == 1 && currentHeadVertex.j < currentTailVertex.j)){
-                            System.out.println("first if");
-                            System.out.println("skipping : " + currentTailVertex.i + "," + currentTailVertex.j + "," + currentTailVertex.angle);
-                            tail = (tail - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
-                            headMoved = 0;
-                            tailMoved = 1;
-                            prevTailVertex = currentTailVertex;
-                            currentTailVertex = pgmImage.isotheticVertices.get(tail);
-                            updateTailDirection(currentTailVertex, prevTailVertex);
-                            skipStreak++;
-                            pgmImage.totalTailSkip++;
-                            if (skipStreak > vertexSkipThreshold) {
-                                pgmImage.horizontalSymmetricity = 0;
-                                break;
-                            }
+                    System.out.println("i distance not almost same");
+                    if (headJDistance > tailJDistance){
+                        breakLoop = skipTail();
+                        if (breakLoop == 1){
+                            pgmImage.horizontalSymmetry = 0;
+                            break;
                         }
-                        else if ((headJDirection == 0 && currentHeadVertex.j < currentTailVertex.j) || (headJDirection == 1 && currentHeadVertex.j > currentTailVertex.j)){
-                            System.out.println("second if");
-                            System.out.println("skipping : " + currentHeadVertex.i + "," + currentHeadVertex.j + "," + currentHeadVertex.angle);
-                            prevHeadVertex = currentHeadVertex;
-                            head = (head + 1) % pgmImage.isotheticVertices.size();
-                            headMoved = 1;
-                            tailMoved = 0;
-                            currentHeadVertex = pgmImage.isotheticVertices.get(head);
-                            updateHeadDirection(currentHeadVertex, prevHeadVertex);
-                            skipStreak++;
-                            //increase counter twice  here, because we are skipping the vertices
-                            counter++;
-                            pgmImage.totalHeadSkip++;
-                            if (skipStreak > vertexSkipThreshold) {
-                                pgmImage.horizontalSymmetricity = 0;
-                                break;
-                            }
+                    }
+                    else if (headJDistance < tailJDistance){
+                        breakLoop = skipHead();
+                        if (breakLoop == 1){
+                            pgmImage.horizontalSymmetry = 0;
+                            break;
                         }
                     }
                     else {
-                        if (headJDistance > tailJDistance){
-                            System.out.println("skipping : " + currentTailVertex.i + "," + currentTailVertex.j + "," + currentTailVertex.angle);
-                            tail = (tail - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
-                            prevTailVertex = currentTailVertex;
-                            headMoved = 0;
-                            tailMoved = 1;
-                            currentTailVertex = pgmImage.isotheticVertices.get(tail);
-                            updateTailDirection(currentTailVertex, prevTailVertex);
-                            skipStreak++;
-                            pgmImage.totalTailSkip++;
-                            if (skipStreak > vertexSkipThreshold) {
-                                pgmImage.horizontalSymmetricity = 0;
+                        if (headIDistance > tailIDistance){
+                            breakLoop = skipTail();
+                            if (breakLoop == 1){
+                                pgmImage.horizontalSymmetry = 0;
                                 break;
                             }
                         }
-                        else if (headJDistance < tailJDistance){
-                            System.out.println("skipping : " + currentHeadVertex.i + "," + currentHeadVertex.j + "," + currentHeadVertex.angle);
-                            prevHeadVertex = currentHeadVertex;
-                            head = (head + 1) % pgmImage.isotheticVertices.size();
-                            headMoved = 1;
-                            tailMoved = 0;
-                            currentHeadVertex = pgmImage.isotheticVertices.get(head);
-                            updateHeadDirection(currentHeadVertex, prevHeadVertex);
-                            skipStreak++;
-                            //increase counter twice  here, because we are skipping the vertices
-                            counter++;
-                            pgmImage.totalHeadSkip++;
-                            if (skipStreak > vertexSkipThreshold) {
-                                pgmImage.horizontalSymmetricity = 0;
+                        else if (headIDistance < tailIDistance){
+                            breakLoop = skipHead();
+                            if (breakLoop == 1){
+                                pgmImage.horizontalSymmetry = 0;
+                                break;
+                            }
+                        }
+                        else {
+                            breakLoop = skipHeadAndTail();
+                            if (breakLoop == 1){
+                                pgmImage.horizontalSymmetry = 0;
                                 break;
                             }
                         }
@@ -878,27 +727,6 @@ public class IsotheticOCRold {
                 }
             }while (counter < pgmImage.isotheticVertices.size() && currentHeadVertex != headVertex && currentTailVertex != tailVertex);
         }
-    }
-
-    void scoreCalculator(PgmImage pgmImage){
-
-        int prevEdgeType = 0; //0 for horizontal, 1 for vertical
-
-        Iterator<Vertex> traversor = pgmImage.isotheticVertices.iterator();
-
-        //starting vertex
-        Vertex start = traversor.next();
-
-        Vertex prevVertex = start;
-
-        Vertex currentVertex;
-
-        while (traversor.hasNext()){
-            currentVertex = traversor.next();
-
-
-        }
-
     }
 
     private int edgeLength(Vertex v1, Vertex v2){
@@ -911,35 +739,5 @@ public class IsotheticOCRold {
         }
         else
             return -1;
-    }
-
-    private void updateHeadDirection(Vertex currentHead, Vertex previousHead){
-        if (currentHead.i == previousHead.i){
-            if ((headJDirection == 0 && currentHead.angle == 1) || (headJDirection == 1 && currentHead.angle == 0))
-                headIDirection = 0;
-            else
-                headIDirection = 1;
-        }
-        else if (currentHead.j == previousHead.j){
-            if ((headIDirection == 0 && currentHead.angle == 0) || (headIDirection == 1 && currentHead.angle == 1))
-                headJDirection = 0;
-            else
-                headJDirection = 1;
-        }
-    }
-
-    private void updateTailDirection(Vertex currentTail, Vertex previousTail){
-        if (currentTail.i == previousTail.i){
-            if ((tailJDirection == 0 && currentTail.angle == 1) || (tailJDirection == 1 && currentTail.angle == 0))
-                tailIDirection = 0;
-            else
-                tailIDirection = 1;
-        }
-        else if (currentTail.j == previousTail.j){
-            if ((tailIDirection == 0 && currentTail.angle == 0) || (tailIDirection == 1 && currentTail.angle == 1))
-                tailJDirection = 0;
-            else
-                tailJDirection = 1;
-        }
     }
 }

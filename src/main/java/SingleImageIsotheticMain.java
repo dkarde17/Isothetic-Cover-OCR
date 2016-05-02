@@ -161,26 +161,27 @@ public class SingleImageIsotheticMain {
         sourcePgmImage.iSorted2DList = isotheticCoverCalc.getISorted2DList(sourcePgmImage);
         sourcePgmImage.jSorted2DList = isotheticCoverCalc.getJSorted2DList(sourcePgmImage);
 
-        /*LOGGER.info("Checking vertical symmetry for : " + sourcePgmImage.sourcePgmFile.getName());
+        LOGGER.info("Checking vertical symmetry for : " + sourcePgmImage.sourcePgmFile.getName());
         isotheticOCR.verticalSymmetry(sourcePgmImage, properties, LOGGER);
-        LOGGER.info("Vertical symmetry check done for : " + sourcePgmImage.sourcePgmFile.getName());*/
+        LOGGER.info("Vertical symmetry check done for : " + sourcePgmImage.sourcePgmFile.getName());
 
-        Test.print2DListcontents(sourcePgmImage.jSorted2DList);
+        Test.print2DListcontents(sourcePgmImage.iSorted2DList);
 
-        LOGGER.info("Checking horizontal symmetry for : " + sourcePgmImage.sourcePgmFile.getName());
+        /*LOGGER.info("Checking horizontal symmetry for : " + sourcePgmImage.sourcePgmFile.getName());
         isotheticOCR.horizontalSymmetry(sourcePgmImage, properties, LOGGER);
-        LOGGER.info("Horizontal symmetry check done for : " + sourcePgmImage.sourcePgmFile.getName());
+        LOGGER.info("Horizontal symmetry check done for : " + sourcePgmImage.sourcePgmFile.getName());*/
 
 
 
-        /*if (sourcePgmImage.verticalSymmetricity == 1)
-            System.out.println(sourcePgmImage.sourcePgmFile.getName() + " is vertically symmetric");
+
+        if (sourcePgmImage.verticalSymmetry == 1)
+            System.out.printf(sourcePgmImage.sourcePgmFile.getName() + " is vertically symmetric, " + sourcePgmImage.verticalMaxSkipStreak + " | " + sourcePgmImage.verticalTotalHeadSkip + "\t" + sourcePgmImage.verticalTotalTailSkip + "\t" + sourcePgmImage.isotheticVertices.size() + "\t" + sourcePgmImage.verticalSymmetryProbability + "\t" + sourcePgmImage.verticalAsymmetryProbability + "\n");
         else
-            System.out.println(sourcePgmImage.sourcePgmFile.getName() + " is vertically asymmetric");*/
+            System.out.printf(sourcePgmImage.sourcePgmFile.getName() + " is vertically asymmetric, " + sourcePgmImage.verticalMaxSkipStreak + " | " + sourcePgmImage.verticalTotalHeadSkip + "\t" + sourcePgmImage.verticalTotalTailSkip + "\t" + sourcePgmImage.isotheticVertices.size() + "\t" + sourcePgmImage.verticalSymmetryProbability + "\t" + sourcePgmImage.verticalAsymmetryProbability + "\n");
 
-        if (sourcePgmImage.horizontalSymmetricity == 1)
-            System.out.println(sourcePgmImage.sourcePgmFile.getName() + " is horizontally symmetric");
+        if (sourcePgmImage.horizontalSymmetry == 1)
+            System.out.println(sourcePgmImage.sourcePgmFile.getName() + " is horizontally symmetric, " + sourcePgmImage.horizontalMaxSkipStreak + " | " + sourcePgmImage.horizontalTotalHeadSkip + "\t" + sourcePgmImage.horizontalTotalTailSkip + "\t" + sourcePgmImage.isotheticVertices.size() + "\t" + sourcePgmImage.horizontalSymmetryProbability + "\t" + sourcePgmImage.horizontalAsymmetryProbability + "\n");
         else
-            System.out.println(sourcePgmImage.sourcePgmFile.getName() + " is horizontally asymmetric");
+            System.out.println(sourcePgmImage.sourcePgmFile.getName() + " is horizontally asymmetric, " + sourcePgmImage.horizontalMaxSkipStreak + " | " + sourcePgmImage.horizontalTotalHeadSkip + "\t" + sourcePgmImage.horizontalTotalTailSkip + "\t" + sourcePgmImage.isotheticVertices.size() + "\t" + sourcePgmImage.horizontalSymmetryProbability + "\t" + sourcePgmImage.horizontalAsymmetryProbability + "\n");
     }
 }

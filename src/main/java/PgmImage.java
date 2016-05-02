@@ -43,11 +43,16 @@ public class PgmImage {
     int iAvg;
 
     //scoring variables
-    int verticalSymmetricity;
-    int horizontalSymmetricity;
-    int totalHeadSkip; //variable to keep track of total skips while traversing the cover to check for the symmetry
-    int totalTailSkip;
-    int maxSkipStreak;
-    int maximumHeadSkipStreak;
-    int maximumTailSkipStreak;
+    int verticalSymmetry;
+    int horizontalSymmetry;
+    int horizontalTotalHeadSkip; //variable to keep track of total skips while traversing the cover to check for the symmetry
+    int verticalTotalHeadSkip; //variable to keep track of total skips while traversing the cover to check for the symmetry
+    int horizontalTotalTailSkip;
+    int verticalTotalTailSkip;
+    int horizontalMaxSkipStreak;
+    int verticalMaxSkipStreak;
+    double verticalAsymmetryProbability;
+    double verticalSymmetryProbability;
+    double horizontalAsymmetryProbability;
+    double horizontalSymmetryProbability;
 }
