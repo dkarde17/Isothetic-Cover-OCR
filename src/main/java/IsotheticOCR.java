@@ -58,159 +58,50 @@ public class IsotheticOCR {
         int headJDifference = mid - headVertex.j;
 
         LOGGER.info("Finding the tail vertex corresponding to head in : " + pgmImage.sourcePgmFile.getName());
+
+        for (int i = 0; i <= iGridErrorVertical && found == 0; i++){
+            for (int j = 0; j <= jGridErrorVertical && found == 0; j++){
+                int counter = 0;
+                while (counter < pgmImage.isotheticVertices.size() && found == 0) {
+
+                    Vertex temp = pgmImage.isotheticVertices.get(tail);
+
+                    //perfectly mirrored vertex
+                    if (temp.i == headVertex.i + i*gridSize && temp.j == mid + headJDifference - j*gridSize && temp.angle == headVertex.angle) {
+                        found++;
+                        System.out.println("found : " + temp.i + "," + temp.j + "," + temp.angle);
+                        break;
+                    }
+
+                    tail = (tail - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
+                    counter++;
+                }
+                if (found == 0){
+                    this.counter = counter;
+                    counter = 0;
+                }
+                while (counter < pgmImage.isotheticVertices.size() && found == 0 && j != 0){
+                    Vertex temp = pgmImage.isotheticVertices.get(tail);
+
+                    //vertex one grid size after the perfectly mirrored vertex
+                    if (temp.i == headVertex.i + i*gridSize && temp.j == (mid + headJDifference + j*gridSize) && temp.angle == headVertex.angle){
+                        found++;
+                        System.out.println("found : " + temp.i + "," + temp.j + "," + temp.angle);
+                        break;
+                    }
+
+                    tail = (tail - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
+                    counter++;
+                }
+                if (found == 0){
+                    this.counter = counter;
+                    counter = 0;
+                }
+
+            }
+
+        }
         //to find the starting value of tail (mirror of head) at i, mid + d (if head = i, mid - d)
-        if (found == 0) {
-
-            //counter to run the loop exactly the number of times equal to the number of vertices in the isothetic vertices list
-            int counter = 0;
-
-            //check for all the vertices in the isotheticVertices list starting from the last vertex
-            while (counter < pgmImage.isotheticVertices.size() && found == 0) {
-
-                Vertex temp = pgmImage.isotheticVertices.get(tail);
-
-                //perfectly mirrored vertex
-                if (temp.i == headVertex.i && temp.j == mid + headJDifference && temp.angle == headVertex.angle) {
-                    found++;
-                    System.out.println("found : " + temp.i + "," + temp.j + "," + temp.angle);
-                    break;
-                }
-
-                tail = (tail - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
-                counter++;
-            }
-            this.counter = counter;
-
-        }
-
-        //if mirror of head not found then look for <i, mid + d - gridSize>
-        if (found == 0){
-
-            //counter to run the loop exactly the number of times equal to the number of vertices in the isothetic vertices list
-            int counter = 0;
-
-            tail = (head - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
-
-            //check for all the vertices in the isotheticVertices list starting from the last vertex
-            while (counter < pgmImage.isotheticVertices.size() && found == 0){
-
-                Vertex temp = pgmImage.isotheticVertices.get(tail);
-                //vertex one grid size before the perfectly mirrored vertex
-                if (temp.i == headVertex.i && temp.j == (mid + headJDifference - gridSize) && temp.angle == headVertex.angle){
-                    found++;
-                    System.out.println("found : " + temp.i + "," + temp.j + "," + temp.angle);
-                    break;
-                }
-
-                tail = (tail - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
-                counter++;
-            }
-            this.counter = counter;
-
-        }
-
-        //if still not found then look for <i, mid + d + gridSize>
-        if (found == 0){
-
-            //counter to run the loop exactly the number of times equal to the number of vertices in the isothetic vertices list
-            int counter = 0;
-            tail = (head - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
-
-            //check for all the vertices in the isotheticVertices list starting from the last vertex
-            while (counter < pgmImage.isotheticVertices.size() && found == 0){
-                Vertex temp = pgmImage.isotheticVertices.get(tail);
-
-                //vertex one grid size after the perfectly mirrored vertex
-                if (temp.i == headVertex.i && temp.j == (mid + headJDifference + gridSize) && temp.angle == headVertex.angle){
-                    found++;
-                    System.out.println("found : " + temp.i + "," + temp.j + "," + temp.angle);
-                    break;
-                }
-
-                tail = (tail - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
-                counter++;
-            }
-            this.counter = counter;
-
-        }
-
-        //if still not found then look for <i - 1, mid + d>
-        if(found == 0){
-
-            //counter to run the loop exactly the number of times equal to the number of vertices in the isothetic vertices list
-            int counter = 0;
-
-            tail = (head - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
-
-            //check for all the vertices in the isotheticVertices list starting from the last vertex
-            while (counter < pgmImage.isotheticVertices.size() && found == 0){
-                Vertex temp = pgmImage.isotheticVertices.get(tail);
-
-                //vertex on i+g, j mirror image
-                if (temp.i == headVertex.i + gridSize && temp.j == (mid + headJDifference) && temp.angle == headVertex.angle){
-                    found++;
-                    System.out.println("found : " + temp.i + "," + temp.j + "," + temp.angle);
-                    break;
-                }
-
-                tail = (tail - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
-                counter++;
-            }
-            this.counter = counter;
-
-        }
-
-        //if still not found then look for <i - 1, mid + d - gridSize>
-        if (found == 0){
-
-            //counter to run the loop exactly the number of times equal to the number of vertices in the isothetic vertices list
-            int counter = 0;
-
-            tail = (head - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
-
-            //check for all the vertices in the isotheticVertices list starting from the last vertex
-            while (counter < pgmImage.isotheticVertices.size() && found == 0){
-                Vertex temp = pgmImage.isotheticVertices.get(tail);
-
-                //vertex one grid size after the perfectly mirrored vertex
-                if (temp.i == headVertex.i + gridSize && temp.j == (mid + headJDifference - gridSize) && temp.angle == headVertex.angle){
-                    found++;
-                    System.out.println("found : " + temp.i + "," + temp.j + "," + temp.angle);
-                    break;
-                }
-
-                tail = (tail - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
-                counter++;
-            }
-            this.counter = counter;
-
-        }
-
-        //if still not found then look for <i - 1, mid + d + gridSize>
-        if (found == 0){
-
-            //counter to run the loop exactly the number of times equal to the number of vertices in the isothetic vertices list
-            int counter = 0;
-
-            tail = (head - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
-
-            //check for all the vertices in the isotheticVertices list starting from the last vertex
-            while (counter < pgmImage.isotheticVertices.size() && found == 0){
-                Vertex temp = pgmImage.isotheticVertices.get(tail);
-
-                //vertex one grid size after the perfectly mirrored vertex
-                if (temp.i == headVertex.i + gridSize && temp.j == (mid + headJDifference + gridSize) && temp.angle == headVertex.angle){
-                    found++;
-                    System.out.println("found : " + temp.i + "," + temp.j + "," + temp.angle);
-                    break;
-                }
-
-                tail = (tail - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
-                counter++;
-            }
-            this.counter = counter;
-
-        }
 
         //if corresponding vertex not found
         if(found == 0){
@@ -297,27 +188,12 @@ public class IsotheticOCR {
                     else {
                         if (headJDistance > tailJDistance){
                             skipTail();
-                            /*breakLoop = skipTail();
-                            if (breakLoop == 1){
-                                pgmImage.verticalSymmetry = 0;
-                                break;
-                            }*/
                         }
                         else if (tailJDistance > headJDistance){
                             skipHead();
-                            /*breakLoop = skipHead();
-                            if (breakLoop == 1){
-                                pgmImage.verticalSymmetry = 0;
-                                break;
-                            }*/
                         }
                         else {
                             skipHeadAndTail();
-                            /*breakLoop = skipHeadAndTail();
-                            if (breakLoop == 1){
-                                pgmImage.verticalSymmetry = 0;
-                                break;
-                            }*/
                         }
                     }
                 }
@@ -325,51 +201,26 @@ public class IsotheticOCR {
                 else {
                     if (headIDistance > tailIDistance){
                         skipTail();
-                        /*breakLoop = skipTail();
-                        if (breakLoop == 1){
-                            pgmImage.verticalSymmetry = 0;
-                            break;
-                        }*/
                     }
                     else if (headIDistance < tailIDistance){
                         skipHead();
-                        /*breakLoop = skipHead();
-                        if (breakLoop == 1){
-                            pgmImage.verticalSymmetry = 0;
-                            break;
-                        }*/
                     }
 
                     else {
                         if (headJDistance > tailJDistance){
                             skipTail();
-                            /*breakLoop = skipTail();
-                            if (breakLoop == 1){
-                                pgmImage.verticalSymmetry = 0;
-                                break;
-                            }*/
                         }
                         else if (headJDistance < tailJDistance){
                             skipHead();
-                            /*breakLoop = skipHead();
-                            if (breakLoop == 1){
-                                pgmImage.verticalSymmetry = 0;
-                                break;
-                            }*/
                         }
                         else {
                             skipHeadAndTail();
-                            /*breakLoop = skipHeadAndTail();
-                            if (breakLoop == 1){
-                                pgmImage.verticalSymmetry = 0;
-                                break;
-                            }*/
                         }
                     }
                 }
             }while (counter < pgmImage.isotheticVertices.size() && currentHeadVertex != headVertex && currentTailVertex != tailVertex);
 
-            pgmImage.verticalAsymmetryProbability = (((pgmImage.verticalTotalHeadSkip + pgmImage.verticalTotalTailSkip)) * 1.0) / (pgmImage.isotheticVertices.size() * 1.0);
+            pgmImage.verticalAsymmetryProbability = (((pgmImage.verticalTotalHeadSkip + pgmImage.verticalTotalTailSkip)/2) * 1.0) / (pgmImage.isotheticVertices.size() * 1.0);
             pgmImage.verticalSymmetryProbability = 1 - pgmImage.verticalAsymmetryProbability;
             if (pgmImage.verticalSymmetryProbability > pgmImage.verticalAsymmetryProbability)
                 pgmImage.verticalSymmetry = 1;
@@ -517,157 +368,50 @@ public class IsotheticOCR {
 
         LOGGER.info("Finding the tail vertex corresponding to head in : " + pgmImage.sourcePgmFile.getName());
         //to find the starting value of tail (mirror of head) at i, mid + d (if head = i, mid - d)
-        if (found == 0) {
 
-            //counter to run the loop exactly the number of times equal to the number of vertices in the isothetic vertices list
-            int counter = 0;
+        for (int j = 0; j <= jGridErrorHorizontal && found == 0; j++){
+            for (int i = 0; i <= iGridErrorHorizontal && found == 0; i++){
+                int counter = 0;
+                while (counter < pgmImage.isotheticVertices.size() && found == 0) {
 
-            //check for all the vertices in the isotheticVertices list starting from the last vertex
-            while (counter < pgmImage.isotheticVertices.size() && found == 0) {
+                    Vertex temp = pgmImage.isotheticVertices.get(tail);
 
-                Vertex temp = pgmImage.isotheticVertices.get(tail);
+                    //perfectly mirrored vertex
+                    if (temp.j == headVertex.j + j*gridSize && temp.i == mid - headIDifference + i*gridSize && temp.angle == headVertex.angle) {
+                        found++;
+                        System.out.println("found : " + temp.i + "," + temp.j + "," + temp.angle);
+                        break;
+                    }
 
-                //perfectly mirrored vertex
-                if (temp.j == headVertex.j && temp.i == mid - headIDifference && temp.angle == headVertex.angle) {
-                    found++;
-                    System.out.println("found : " + temp.i + "," + temp.j + "," + temp.angle);
-                    break;
+                    tail = (tail - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
+                    counter++;
+                }
+                if (found == 0){
+                    this.counter = counter;
+                    counter = 0;
+                }
+                while (counter < pgmImage.isotheticVertices.size() && found == 0 && i != 0){
+                    Vertex temp = pgmImage.isotheticVertices.get(tail);
+
+                    //vertex one grid size after the perfectly mirrored vertex
+                    if (temp.j == headVertex.j + j*gridSize && temp.i == (mid - headIDifference - i*gridSize) && temp.angle == headVertex.angle){
+                        found++;
+                        System.out.println("found : " + temp.i + "," + temp.j + "," + temp.angle);
+                        break;
+                    }
+
+                    tail = (tail - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
+                    counter++;
+                }
+                if (found == 0){
+                    this.counter = counter;
+                    counter = 0;
                 }
 
-                tail = (tail - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
-                counter++;
             }
-
-            this.counter = counter;
-        }
-
-        //if mirror of head not found then look for <i, mid + d - gridSize>
-        if (found == 0){
-
-            //counter to run the loop exactly the number of times equal to the number of vertices in the isothetic vertices list
-            int counter = 0;
-
-            tail = (head - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
-
-            //check for all the vertices in the isotheticVertices list starting from the last vertex
-            while (counter < pgmImage.isotheticVertices.size() && found == 0){
-
-                Vertex temp = pgmImage.isotheticVertices.get(tail);
-                //vertex one grid size before the perfectly mirrored vertex
-                if (temp.j == headVertex.j && temp.i == (mid - headIDifference + gridSize) && temp.angle == headVertex.angle){
-                    found++;
-                    System.out.println("found : " + temp.i + "," + temp.j + "," + temp.angle);
-                    break;
-                }
-
-                tail = (tail - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
-                counter++;
-            }
-
-            this.counter = counter;
-        }
-
-        //if still not found then look for <i, mid + d + gridSize>
-        if (found == 0){
-
-            //counter to run the loop exactly the number of times equal to the number of vertices in the isothetic vertices list
-            int counter = 0;
-            tail = (head - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
-
-            //check for all the vertices in the isotheticVertices list starting from the last vertex
-            while (counter < pgmImage.isotheticVertices.size() && found == 0){
-                Vertex temp = pgmImage.isotheticVertices.get(tail);
-
-                //vertex one grid size after the perfectly mirrored vertex
-                if (temp.j == headVertex.j && temp.i == (mid - headIDifference - gridSize) && temp.angle == headVertex.angle){
-                    found++;
-                    System.out.println("found : " + temp.i + "," + temp.j + "," + temp.angle);
-                    break;
-                }
-
-                tail = (tail - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
-                counter++;
-            }
-
-            this.counter = counter;
 
         }
 
-        //if still not found then look for <i - 1, mid + d>
-        if(found == 0){
-
-            //counter to run the loop exactly the number of times equal to the number of vertices in the isothetic vertices list
-            int counter = 0;
-
-            tail = (head - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
-
-            //check for all the vertices in the isotheticVertices list starting from the last vertex
-            while (counter < pgmImage.isotheticVertices.size() && found == 0){
-                Vertex temp = pgmImage.isotheticVertices.get(tail);
-
-                //vertex on i+g, j mirror image
-                if (temp.j == headVertex.j + gridSize && temp.i == (mid - headIDifference) && temp.angle == headVertex.angle){
-                    found++;
-                    System.out.println("found : " + temp.i + "," + temp.j + "," + temp.angle);
-                    break;
-                }
-
-                tail = (tail - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
-                counter++;
-            }
-
-            this.counter = counter;
-        }
-
-        //if still not found then look for <i - 1, mid + d - gridSize>
-        if (found == 0){
-
-            //counter to run the loop exactly the number of times equal to the number of vertices in the isothetic vertices list
-            int counter = 0;
-
-            tail = (head - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
-
-            //check for all the vertices in the isotheticVertices list starting from the last vertex
-            while (counter < pgmImage.isotheticVertices.size() && found == 0){
-                Vertex temp = pgmImage.isotheticVertices.get(tail);
-
-                //vertex one grid size after the perfectly mirrored vertex
-                if (temp.j == headVertex.j + gridSize && temp.i == (mid - headIDifference + gridSize) && temp.angle == headVertex.angle){
-                    found++;
-                    System.out.println("found : " + temp.i + "," + temp.j + "," + temp.angle);
-                    break;
-                }
-
-                tail = (tail - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
-                counter++;
-            }
-            this.counter = counter;
-        }
-
-        //if still not found then look for <i - 1, mid + d + gridSize>
-        if (found == 0){
-
-            //counter to run the loop exactly the number of times equal to the number of vertices in the isothetic vertices list
-            int counter = 0;
-
-            tail = (head - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
-
-            //check for all the vertices in the isotheticVertices list starting from the last vertex
-            while (counter < pgmImage.isotheticVertices.size() && found == 0){
-                Vertex temp = pgmImage.isotheticVertices.get(tail);
-
-                //vertex one grid size after the perfectly mirrored vertex
-                if (temp.j == headVertex.j + gridSize && temp.i == (mid - headIDifference - gridSize) && temp.angle == headVertex.angle){
-                    found++;
-                    System.out.println("found : " + temp.i + "," + temp.j + "," + temp.angle);
-                    break;
-                }
-
-                tail = (tail - 1 + pgmImage.isotheticVertices.size()) % pgmImage.isotheticVertices.size();
-                counter++;
-            }
-            this.counter = counter;
-        }
 
         //if corresponding vertex not found
         if(found == 0){
@@ -746,27 +490,12 @@ public class IsotheticOCR {
                     else {
                         if (headIDistance > tailIDistance){
                             skipTail();
-//                            breakLoop = skipTail();
-                            /*if (breakLoop == 1){
-                                pgmImage.horizontalSymmetry = 0;
-                                break;
-                            }*/
                         }
                         else if (tailIDistance > headIDistance){
                             skipHead();
-                            /*breakLoop = skipHead();
-                            if (breakLoop == 1){
-                                pgmImage.horizontalSymmetry = 0;
-                                break;
-                            }*/
                         }
                         else {
                             skipHeadAndTail();
-                            /*breakLoop = skipHeadAndTail();
-                            if (breakLoop == 1){
-                                pgmImage.horizontalSymmetry = 0;
-                                break;
-                            }*/
                         }
                     }
                 }
@@ -774,47 +503,24 @@ public class IsotheticOCR {
                     System.out.println("i distance not almost same");
                     if (headJDistance > tailJDistance){
                         skipTail();
-                        /*breakLoop = skipTail();
-                        if (breakLoop == 1){
-                            pgmImage.horizontalSymmetry = 0;
-                            break;
-                        }*/
                     }
                     else if (headJDistance < tailJDistance){
                         skipHead();
-                        /*breakLoop = skipHead();
-                        if (breakLoop == 1){
-                            pgmImage.horizontalSymmetry = 0;
-                            break;
-                        }*/
                     }
                     else {
                         if (headIDistance > tailIDistance){
                             skipTail();
-                            /*breakLoop = skipTail();
-                            if (breakLoop == 1){
-                                pgmImage.horizontalSymmetry = 0;
-                                break;
-                            }*/
                         }
                         else if (headIDistance < tailIDistance){
                             skipHead();
-                            /*if (breakLoop == 1){
-                                pgmImage.horizontalSymmetry = 0;
-                                break;
-                            }*/
                         }
                         else {
                             skipHeadAndTail();
-                            /*if (breakLoop == 1){
-                                pgmImage.horizontalSymmetry = 0;
-                                break;
-                            }*/
                         }
                     }
                 }
             }while (counter < pgmImage.isotheticVertices.size() && currentHeadVertex != headVertex && currentTailVertex != tailVertex);
-            pgmImage.horizontalAsymmetryProbability = (((pgmImage.horizontalTotalHeadSkip+ pgmImage.horizontalTotalTailSkip)) * 1.0) / (pgmImage.isotheticVertices.size() * 1.0);
+            pgmImage.horizontalAsymmetryProbability = (((pgmImage.horizontalTotalHeadSkip+ pgmImage.horizontalTotalTailSkip)/2) * 1.0) / (pgmImage.isotheticVertices.size() * 1.0);
             pgmImage.horizontalSymmetryProbability = 1 - pgmImage.horizontalAsymmetryProbability;
             if (pgmImage.horizontalSymmetryProbability > pgmImage.horizontalAsymmetryProbability)
                 pgmImage.horizontalSymmetry = 1;

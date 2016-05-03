@@ -213,9 +213,9 @@ public class DirectoryImagesIsotheticMain {
             sourcePgmImage.iSorted2DList = isotheticCoverCalc.getISorted2DList(sourcePgmImage);
             sourcePgmImage.jSorted2DList = isotheticCoverCalc.getJSorted2DList(sourcePgmImage);
 
-            LOGGER.info("Checking vertical symmetry for : " + sourcePgmImage.sourcePgmFile.getName());
+            /*LOGGER.info("Checking vertical symmetry for : " + sourcePgmImage.sourcePgmFile.getName());
             isotheticOCR.verticalSymmetry(sourcePgmImage, properties, LOGGER);
-            LOGGER.info("Vertical symmetry check done for : " + sourcePgmImage.sourcePgmFile.getName());
+            LOGGER.info("Vertical symmetry check done for : " + sourcePgmImage.sourcePgmFile.getName());*/
 
             LOGGER.info("Checking horizontal symmetry for : " + sourcePgmImage.sourcePgmFile.getName());
             isotheticOCR.horizontalSymmetry(sourcePgmImage, properties, LOGGER);
@@ -224,7 +224,7 @@ public class DirectoryImagesIsotheticMain {
 
         //print symmetry status
         for (PgmImage pgmImage : pgmImages){
-            System.out.printf(pgmImage.sourcePgmFile.getName() + " is " + ((pgmImage.verticalSymmetry == 1)?"vertically symmetric": "vertically assymetric") + " - " + pgmImage.verticalMaxSkipStreak + " | " + pgmImage.verticalTotalHeadSkip + "\t" + pgmImage.verticalTotalTailSkip + "\t" + pgmImage.isotheticVertices.size() + "\t" + pgmImage.verticalSymmetryProbability + "\t" + pgmImage.verticalAsymmetryProbability + "\n");
+//            System.out.printf(pgmImage.sourcePgmFile.getName() + " is " + ((pgmImage.verticalSymmetry == 1)?"vertically symmetric": "vertically assymetric") + " - " + pgmImage.verticalMaxSkipStreak + " | " + pgmImage.verticalTotalHeadSkip + "\t" + pgmImage.verticalTotalTailSkip + "\t" + pgmImage.isotheticVertices.size() + "\t" + pgmImage.verticalSymmetryProbability + "\t" + pgmImage.verticalAsymmetryProbability + "\n");
             System.out.printf(pgmImage.sourcePgmFile.getName() + " is " + ((pgmImage.horizontalSymmetry == 1)?"horizontally symmetric": "horizontally assymetric") + " - " + pgmImage.horizontalMaxSkipStreak + " | " + pgmImage.horizontalTotalHeadSkip + "\t" + pgmImage.horizontalTotalTailSkip + "\t" + pgmImage.isotheticVertices.size() + "\t" + pgmImage.horizontalSymmetryProbability + "\t" + pgmImage.horizontalAsymmetryProbability + "\n");
         }
     }
